@@ -1,0 +1,23 @@
+net clk11_IBUF 2
+	BUFG_inst0 I
+	clk10_IBUF_inst O
+endnet
+net net1 3
+DSP_ConfigDSP_inst2_inst_b/my_dsp C[8]
+BRAM_ConfigSDP_inst0_inst_b/my_sdpram ADDRBWRADDR[14]
+FDRE_inst_b Q
+endnet 
+net net2 3
+LUT2_LUT2__config_inst4_inst_b O
+LUT3_LUT3__config_inst5_inst_b I1
+IBUF_inst0 I
+endnet 
+net net3 2
+LUT5_LUT5__config_inst7_inst_b O
+LUT4_LUT4__config_inst6_inst_b I2
+endnet 
+net net4 3
+OBUF_inst25 O
+LUT6_LUT6__config_inst8_inst_bb I4
+clk10_IBUF_inst I
+endnet 

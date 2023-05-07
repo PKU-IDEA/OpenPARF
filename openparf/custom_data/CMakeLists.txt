@@ -1,0 +1,2 @@
+add_subdirectory(chain_info)
+add_subdirectory(ssr_chain_info)

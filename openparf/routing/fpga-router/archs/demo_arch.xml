@@ -1,0 +1,430 @@
+<?xml version="1.0"?>
+<arch>
+<primitives>
+	<!-- TODO: Define all primitive type. -->
+	<primitive name="DUMMY"/>
+	<primitive name="INPAD">
+		<input name="DO"  width="1"/>
+		<input name="DI"  width="1"/>
+		<input name="SR"  width="1" type="CTRL_SR"/>
+		<input name="CE"  width="1" type="CTRL_CE"/>
+		<input name="CLK"  width="1" type="CLOCK"/>
+	</primitive>
+
+	<primitive name="OUTPAD">
+		<input name="DO"  width="1"/>
+		<input name="DI"  width="1"/>
+		<input name="SR"  width="1" type="CTRL_SR"/>
+		<input name="CE"  width="1" type="CTRL_CE"/>
+		<input name="CLK"  width="1" type="CLOCK"/>
+	</primitive>
+
+	<primitive name="GCU0">
+		<input name="CLK"  width="1" type="CLOCK"/>
+		<input name="I"  width="330"/>
+		<input name="O"  width="207"/>
+	</primitive>
+
+	<primitive name="HRAM">
+		<input name="DOUT"  width="72"/>
+		<input name="CLK"  width="1" type="CLOCK"/>
+		<input name="REN"  width="1"/>
+		<input name="WEN"  width="1"/>
+		<input name="AR"  width="11"/>
+		<input name="AW"  width="11"/>
+		<input name="DIN"  width="72"/>
+		<input name="ERRINS"  width="1"/>
+		<input name="ERRIND"  width="1"/>
+		<input name="RST_N"  width="1"/>
+		<input name="ERRFLAGS"  width="1"/>
+		<input name="ERRFLAGD"  width="1"/>
+		<input name="ERRADDR"  width="11"/>
+	</primitive>
+
+	<primitive name="BRAM36K">
+		<input name="SUB_DOUT"  width="36"/>
+		<input name="DOUT"  width="36"/>
+		<input name="DIN"  width="36"/>
+		<input name="AW"  width="11"/>
+		<input name="WEN"  width="1"/>
+		<input name="AR"  width="11"/>
+		<input name="REN"  width="1"/>
+		<input name="SUB_DIN"  width="36"/>
+		<input name="SUB_AW"  width="11"/>
+		<input name="SUB_WEN"  width="1"/>
+		<input name="SUB_AR"  width="11"/>
+		<input name="SUB_REN"  width="1"/>
+		<input name="TP_U0_LS"  width="1"/>
+		<input name="TP_U1_LS"  width="1"/>
+		<input name="CLR_INNER_BP0_FIFO"  width="1"/>
+		<input name="CLR_INNER_BP1_FIFO"  width="1"/>
+		<input name="FIFO_CLR"  width="1"/>
+		<input name="FIFO_D_R_RDY"  width="1"/>
+		<input name="ERRINS"  width="1"/>
+		<input name="ERRIND"  width="1"/>
+		<input name="CLK_USER0_W"  width="1" type="CLOCK"/>
+		<input name="CLK_USER0_R"  width="1" type="CLOCK"/>
+		<input name="CLK_USER1_W"  width="1" type="CLOCK"/>
+		<input name="CLK_USER1_R"  width="1" type="CLOCK"/>
+		<input name="RST_BRAM_N"  width="1"/>
+		<input name="RAM0_MBIST_WM0"  width="1"/>
+		<input name="RAM0_MBIST_WM1"  width="1"/>
+		<input name="RAM1_MBIST_WM0"  width="1"/>
+		<input name="RAM1_MBIST_WM1"  width="1"/>
+		<input name="SDP0_RD_VLD"  width="1"/>
+		<input name="SDP1_RD_VLD"  width="1"/>
+		<input name="D_R_AEMPTY"  width="1"/>
+		<input name="D_R_EMPTY"  width="1"/>
+		<input name="ECC_AR"  width="9"/>
+		<input name="ERRFLAGS"  width="1"/>
+		<input name="ERRFLAGD"  width="1"/>
+		<input name="FIFO_D_W_RDY"  width="1"/>
+		<input name="D_DOUT_VLD"  width="1"/>
+		<input name="D_W_AFULL"  width="1"/>
+		<input name="D_W_FULL"  width="1"/>
+	</primitive>
+
+	<primitive name="DFF">
+		<input name="Q"  width="1"/>
+		<input name="D"  width="1"/>
+		<input name="SR"  width="1" type="CTRL_SR"/>
+		<input name="CE"  width="1" type="CTRL_CE"/>
+		<input name="C"  width="1" type="CLOCK"/>
+	</primitive>
+
+	<primitive name="LUT5">
+		<input name="OUT"  width="1"/>
+		<input name="IN"  width="6"/>
+		<input name="LCAS_IN"  width="1"/>
+		<input name="CCAS_IN"  width="1"/>
+	</primitive>
+
+	<primitive name="LUT6">
+		<input name="OUT"  width="2"/>
+		<input name="IN"  width="6"/>
+		<input name="LCAS_IN"  width="1"/>
+		<input name="CCAS_IN"  width="1"/>
+		<input name="P"  width="1"/>
+		<input name="G"  width="1"/>
+	</primitive>
+
+	<primitive name="LRAM">
+		<input name="O"  width="2"/>
+		<input name="CE"  width="1"/>
+		<input name="A"  width="6"/>
+		<input name="WA"  width="6"/>
+		<input name="D"  width="2"/>
+		<input name="CLK"  width="1" type="CLOCK"/>
+	</primitive>
+
+	<primitive name="GLOBAL_CLK">
+		<input name="IN"  width="1"/>
+		<input name="VIN"  width="1"/>
+	</primitive>
+
+	<primitive name="GCLK_BUF">
+		<input name="OUT"  width="1"/>
+		<input name="IN"  width="1"/>
+	</primitive>
+
+	<primitive name="SHIFT">
+		<input name="A"  width="6"/>
+		<input name="SFTIN"  width="1"/>
+		<input name="CE"  width="1"/>
+		<input name="CLK"  width="1" type="CLOCK"/>
+	</primitive>
+
+</primitives>
+
+<global_sw name="GSW_A">
+	<input name="i_clk" with="8" type="clock"/>
+	<input name="o_clk" with="8" type="clock"/>
+
+	<input  name="i_el6" width="8" direction="east" length="6"/>
+	<output name="o_el6" width="8" direction="east" length="6"/>
+	<input  name="i_el2" width="8" direction="east" length="2"/>
+	<output name="o_el2" width="8" direction="east" length="2"/>
+	<input  name="i_el1" width="8" direction="east" length="1"/>
+	<output name="o_el1" width="8" direction="east" length="1"/>
+
+	<input  name="i_wl6" width="8" direction="west" length="6"/>
+	<output name="o_wl6" width="8" direction="west" length="6"/>
+	<input  name="i_wl2" width="8" direction="west" length="2"/>
+	<output name="o_wl2" width="8" direction="west" length="2"/>
+	<input  name="i_wl1" width="8" direction="west" length="1"/>
+	<output name="o_wl1" width="8" direction="west" length="1"/>
+
+	<input  name="i_sl6" width="8" direction="south" length="6"/>
+	<output name="o_sl6" width="8" direction="south" length="6"/>
+	<input  name="i_sl2" width="8" direction="south" length="2"/>
+	<output name="o_sl2" width="8" direction="south" length="2"/>
+	<input  name="i_sl1" width="8" direction="south" length="1"/>
+	<output name="o_sl1" width="8" direction="south" length="1"/>
+
+	<input  name="i_nl6" width="8" direction="north" length="6"/>
+	<output name="o_nl6" width="8" direction="north" length="6"/>
+	<input  name="i_nl2" width="8" direction="north" length="2"/>
+	<output name="o_nl2" width="8" direction="north" length="2"/>
+	<input  name="i_nl1" width="8" direction="north" length="1"/>
+	<output name="o_nl1" width="8" direction="north" length="1"/>
+
+	<input  name="i_lsw_direct" width="24"/>
+	<input  name="i_lsw_switch" width="16"/>
+	<input  name="i_lsw_special" width="164"/>
+
+	<output name="o_lsw" width="96"/>
+
+	<interconnect>
+		<direct name="clk_byp" inputs="i_clk" outputs="o_clk" /> <!-- direct n->n -->
+
+		<direct name="el1_byp" inputs="i_el1" outputs="o_lsw[7:0]" />
+		<direct name="el2_byp" inputs="i_el2" outputs="o_lsw[15:8]" />
+		<direct name="el6_byp" inputs="i_el6" outputs="o_lsw[23:16]" />
+
+		<connect name="o_nl1_0" inputs="i_el1[0],i_sl1[0],i_sl1[0],i_el2[0],i_sl2[0],i_sl2[0],i_el6[0],i_sl6[0],i_sl6[0],i_lsw_switch[0],i_lsw_direct[0]" outputs="o_nl1[0]" />
+		<connect name="o_nl1_1" inputs="i_el1[0],i_sl1[0],i_sl1[0],i_el2[0],i_sl2[0],i_sl2[0],i_el6[0],i_sl6[0],i_sl6[0],i_lsw_switch[0],i_lsw_direct[0]" outputs="o_nl1[1]" />
+		<connect name="o_nl1_2" inputs="i_el1[0],i_sl1[0],i_sl1[0],i_el2[0],i_sl2[0],i_sl2[0],i_el6[0],i_sl6[0],i_sl6[0],i_lsw_switch[0],i_lsw_direct[0]" outputs="o_nl1[2]" />
+		<connect name="o_nl1_3" inputs="i_el1[0],i_sl1[0],i_sl1[0],i_el2[0],i_sl2[0],i_sl2[0],i_el6[0],i_sl6[0],i_sl6[0],i_lsw_switch[0],i_lsw_direct[0]" outputs="o_nl1[3]" />
+		<connect name="o_nl1_4" inputs="i_el1[0],i_sl1[0],i_sl1[0],i_el2[0],i_sl2[0],i_sl2[0],i_el6[0],i_sl6[0],i_sl6[0],i_lsw_switch[0],i_lsw_direct[0]" outputs="o_nl1[4]" />
+		<connect name="o_nl1_5" inputs="i_el1[0],i_sl1[0],i_sl1[0],i_el2[0],i_sl2[0],i_sl2[0],i_el6[0],i_sl6[0],i_sl6[0],i_lsw_switch[0],i_lsw_direct[0]" outputs="o_nl1[5]" />
+		<connect name="o_nl1_6" inputs="i_el1[0],i_sl1[0],i_sl1[0],i_el2[0],i_sl2[0],i_sl2[0],i_el6[0],i_sl6[0],i_sl6[0],i_lsw_switch[0],i_lsw_direct[0]" outputs="o_nl1[6]" />
+		<connect name="o_nl1_7" inputs="i_el1[0],i_sl1[0],i_sl1[0],i_el2[0],i_sl2[0],i_sl2[0],i_el6[0],i_sl6[0],i_sl6[0],i_lsw_switch[0],i_lsw_direct[0]" outputs="o_nl1[7]" />
+
+		<!--connect_file name="gsw_con.txt"/-->
+
+	</interconnect>
+</global_sw>
+
+<tile_blocks>
+	<tile type="DUMMY" width="1" height="1">
+		<inst name="DUMMY" type="DUMMY" num="1"/> 
+	</tile>
+
+	<tile type="IO" width="1" height="1">
+		<input name="CLK" width="1" type="CLOCK"/>
+		<input name="SR"  width="1" type="CTRL_SR"/>
+		<input name="CE"  width="1" type="CTRL_CE"/>
+		<input name="INPAD"  width="24"/>
+		<output name="OUTPAD" width="24"/>
+
+		<inst name="gsw" type="global_sw"/>
+
+		<interconnect>
+		</interconnect>
+	</tile>
+
+	<tile type="RAMA" width="1" height="4">
+		<module name="RAMA">
+
+		</module>
+
+		<inst type="GSW_A" name="GSW_A" num="4"/>	
+		<inst type="LSW_A" name="LSW_A" num="4"/>	
+
+		<interconnect>
+			<direct name="" inputs="GSW_A[0]" outputs="LSW_A[0]">
+			<direct name="" inputs="LSW_A[0].olsw[0]" outputs="RAMA.we[0]">
+		</interconnect>
+	</tile>
+
+	<tile type="FUAT" width="1" heigh="1">
+		<module name="FUA" num="1">
+			<input name="clk"  width="2" type="clock"/>
+			<input name="ce"  width="4" type="enable"/>
+			<input name="sr"  width="2" type="reset"/>
+
+			<input name="in0"  width="6"/>
+			<input name="in1"  width="6"/>
+			<input name="in2"  width="6"/>
+			<input name="in3"  width="6"/>
+			<input name="in4"  width="6"/>
+			<input name="in5"  width="6"/>
+			<input name="in6"  width="6"/>
+			<input name="in7"  width="6"/>
+			<input name="byp0"  width="8"/>
+			<input name="byp1"  width="8"/>
+
+			<output name="O" width="8"/>
+			<output name="Q0" width="8"/>
+			<output name="Q1" width="8"/>
+
+			<module name="BLE" num="8">
+				<inst name="LUT" num="1">
+					<mode name="TWO_LUT5">
+						<inst type="LUT5" num="2"/>
+						<interconnect>
+						</interconnect>
+					</mode>
+					<mode name="LUT6">
+					</mode>
+				</inst>
+			</module>
+		</module>
+
+		<inst name="gsw" type="global_sw" num="1"/>
+
+		<local_sw name="LSW_A" num="1">
+			<input  name="i_gsw_switch" width="96"/>
+			<input  name="i_gsw_special" width="2"/>
+
+			<output  name="o_gsw_direct" width="24"/>
+			<output  name="o_gsw_switch" width="16"/>
+			<output  name="o_gsw_special" width="164"/>
+
+			<input  name="i_lsw" width="64"/>
+			<output name="o_lsw" width="64"/>
+
+			<!-- gsw to FUA -->
+			<connect name="in0_0"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.in[0]"/>
+			<connect name="in0_1"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.in[1]"/>
+			<connect name="in0_2"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.in[2]"/>
+			<connect name="in0_3"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.in[3]"/>
+			<connect name="in0_4"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.in[4]"/>
+			<connect name="in0_5"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.in[5]"/>
+			<connect name="in0_6"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.in[6]"/>
+			<connect name="in0_7"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.in[7]"/>
+
+			<connect name="byp0_0"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp0[0]"/>
+			<connect name="byp0_1"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp0[1]"/>
+			<connect name="byp0_2"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp0[2]"/>
+			<connect name="byp0_3"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp0[3]"/>
+			<connect name="byp0_4"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp0[4]"/>
+			<connect name="byp0_5"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp0[5]"/>
+			<connect name="byp0_6"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp0[6]"/>
+			<connect name="byp0_7"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp0[7]"/>
+
+			<connect name="byp1_0"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp1[0]"/>
+			<connect name="byp1_1"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp1[1]"/>
+			<connect name="byp1_2"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp1[2]"/>
+			<connect name="byp1_3"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp1[3]"/>
+			<connect name="byp1_4"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp1[4]"/>
+			<connect name="byp1_5"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp1[5]"/>
+			<connect name="byp1_6"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp1[6]"/>
+			<connect name="byp1_7"  inputs="i_gsw_swith[0],i_gsw_swith[1],i_gsw_swith[2],i_gsw_swith[3],i_gsw_swith[4],i_gsw_swith[5],i_gsw_swith[6],i_gsw_swith[7],i_gsw_swith[8],i_gsw_swith[9],i_gsw_swith[10],i_gsw_swith[11],i_gsw_swith[12],i_gsw_swith[13],i_gsw_swith[14],i_gsw_swith[15],i_gsw_swith[16],i_gsw_swith[17],i_gsw_swith[18],i_gsw_swith[19],o_gsw_switch[0]" outputs="FUA.byp1[7]"/>
+
+			<!-- FUA to gsw-->
+			<connect name="switch_0"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[0]"/> <!-- crossbar n->m 1->n n->1 -->
+			<connect name="switch_1"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[1]"/>
+			<connect name="switch_2"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[2]"/>
+			<connect name="switch_3"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[3]"/>
+			<connect name="switch_4"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[4]"/>
+			<connect name="switch_5"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[5]"/>
+			<connect name="switch_6"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[6]"/>
+			<connect name="switch_7"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[7]"/>
+			<connect name="switch_8"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[8]"/>
+			<connect name="switch_9"  inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[9]"/>
+			<connect name="switch_10" inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[10]"/>
+			<connect name="switch_11" inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[11]"/>
+			<connect name="switch_12" inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[12]"/>
+			<connect name="switch_13" inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[13]"/>
+			<connect name="switch_14" inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[14]"/>
+			<connect name="switch_15" inputs="FUA.O[0],FUA.O[1],FUA.O[2],FUA.O[3],FUA.O[4],FUA.O[5],FUA.O[6],FUA.O[7],FUA.Q0[0],FUA.Q0[1],FUA.Q0[2],FUA.Q0[3],FUA.Q1[0],FUA.Q1[1],FUA.Q1[2],FUA.Q1[3]" outputs="o_gsw_switch[15]"/>
+
+			<direct name="direct_O"  inputs="FUA.O"  outputs="o_gsw_direct[7:0]" /> <!-- direct n->n -->
+			<direct name="direct_Q0" inputs="FUA.Q0" outputs="o_gsw_direct[15:8]" />
+			<direct name="direct_Q1" inputs="FUA.Q1" outputs="o_gsw_direct[23:16]" />
+
+			<broadcast name="" inputs="ce[0]" outputs="FUA.ce[3:0]"/>
+
+			<!--connect_file name="lsw_con.txt"/-->
+		</local_sw>
+
+		<interconnect>
+			<direct name="" inputs="gsw.o_lsw_switch" outputs="LSW_A[0].i_gsw_swith"/>
+			<direct name="" inputs="gsw.o_lsw_special" outputs="LSW_A[0].i_gsw_special"/>
+
+			<direct name="" inputs="LSW_A[0].o_gsw_direct" outputs="gsw.i_lsw_direct"/>
+			<direct name="" inputs="LSW_A[0].o_gsw_switch" outputs="gsw.i_lsw_switch"/>
+			<direct name="" inputs="LSW_A[0].o_gsw_special" outputs="gsw.i_lsw_special"/>
+		</interconnect>
+	</tile>
+
+	<tile type="FUBT" width="1" heigh="1">
+	</tile>
+</tile_blocks>
+
+<core name="CORE_A">
+	<input name="inorth" width="784"/>
+	<input name="isouth" width="784"/>
+	<input name="ieast" width="784"/>
+	<input name="iwest" width="784"/>
+
+	<output name="onorth" width="784"/>
+	<output name="osouth" width="784"/>
+	<output name="oeast" width="784"/>
+	<output name="owest" width="784"/>
+
+	<input name="clk" width="24" type="clock"/>
+
+	<clock_region>
+		<region start_x="0" end_x="49" start_y="0" end_y="49"/>
+		<region start_x="0" end_x="49" start_y="50" end_y="99"/>
+		<region start_x="50" end_x="99" start_y="0" end_y="49"/>
+		<region start_x="50" end_x="99" start_y="50" end_y="99"/>
+	</clock_region>
+
+	<grid type="CLOCK_GRID" with="100" height="100">
+	</grid>
+
+	<grid name="TILE_GRID" type="TILE" with="100" height="100">
+		<default type="FUAT" pri="0"/>	
+		<column type="FUBT" start_x="1" x_step="20" pri="5"/>
+		<column type="FUBT" start_x="2" x_step="20" pri="5"/>
+		<column type="RAMA" start_x="4" x_step="20" pri="5"/>
+
+		<region type="DUMMY" start_x="5" end_x="9" start_y="5" end_y="9" pri="100"/> <!-- black box -->
+
+		<region name="north_io" type="IO" start_x="1" end_x="98" start_y="0" end_y="0" pri="100"/>
+		<region name="south_io" type="IO" start_x="1" end_x="98" start_y="99" end_y="99" pri="100"/>
+		<region name="west_io" type="IO" start_x="0" end_x="0" start_y="0" end_y="0" pri="100"/>
+		<region name="east_io" type="IO" start_x="0" end_x="" start_y="0" end_y="0" pri="100"/>
+
+		<inst type="DUMMY" start_x="0"  end_x="0"  pri="20"/>
+		<inst type="DUMMY" start_x="99" end_x="99" pri="20"/>
+		<inst type="DUMMY" start_x="0"  end_x="0"  pri="20"/>
+		<inst type="DUMMY" start_x="99" end_x="99" pri="20"/>
+	</grid>
+
+	<interconnect name="int_conn_core">
+		<direct name="" input="inorth" outputs=""/>
+	</interconnect>
+</core>
+
+<chip name="demo_chip">
+	<input name="i_north" width="784"/>
+	<input name="i_south" width="784"/>
+	<input name="i_east" width="1568"/>
+	<input name="i_west" width="1568"/>
+
+	<output name="o_north" width="784"/>
+	<output name="o_south" width="784"/>
+	<output name="o_east" width="1568"/>
+	<output name="o_west" width="1568"/>
+
+	<grid name="chip_grid" height="2" width="1"> <!-- multi die -->
+		<inst name="CORE_A0" type="CORE_A" x="0" y="0"/>
+		<inst name="CORE_A1" type="CORE_A" x="0" y="1"/>
+	</grid>
+
+	<interconnect name="int_conn_chip">
+		<direct name="CORE_A0_to_CORE_A1" inputs="CORE_A0.o_north" outputs="CORE_A1.i_south"/>
+		<direct name="CORE_A1_to_CORE_A0" inputs="CORE_A1.o_south" outputs="CORE_A0.i_north"/>
+
+		<direct name="CORE_A0_south_to_top" inputs="CORE_A0.o_south" outputs="o_south"/>
+		<direct name="CORE_A0_east_to_top"  inputs="CORE_A0.o_east"  outputs="o_east[783:0]"/>
+		<direct name="CORE_A0_west_to_top"  inputs="CORE_A0.o_west"  outputs="o_west[783:0]"/>
+
+		<direct name="CORE_A1_north_to_top" inputs="CORE_A1.o_north" outputs="o_north"/>
+		<direct name="CORE_A1_east_to_top"  inputs="CORE_A1.o_east"  outputs="o_east[1567:784]"/>
+		<direct name="CORE_A1_west_to_top"  inputs="CORE_A1.o_west"  outputs="o_west[1567:784]"/>
+
+		<direct name="top_to_CORE_A0_south" inputs="i_south"       outputs="CORE_A0.i_south"/>
+		<direct name="top_to_CORE_A0_east"  inputs="i_east[783:0]" outputs="CORE_A0.i_east" />
+		<direct name="top_to_CORE_A0_west"  inputs="i_west[783:0]" outputs="CORE_A0.i_west" />
+
+		<direct name="top_to_CORE_A1_south" inputs="i_north"          outputs="CORE_A1.i_north"/>
+		<direct name="top_to_CORE_A1_east"  inputs="i_east[1567:784]" outputs="CORE_A1.i_east" />
+		<direct name="top_to_CORE_A1_west"  inputs="i_west[1567:784]" outputs="CORE_A1.i_west" />
+	</interconnect>
+</chip>
+</arch>

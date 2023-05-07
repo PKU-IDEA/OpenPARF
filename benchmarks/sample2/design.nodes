@@ -1,0 +1,12 @@
+BRAM_ConfigSDP_inst0_inst_b/my_sdpram BRAM36K
+BUFG_inst0 GCLK_BUF
+DSP_ConfigDSP_inst2_inst_b/my_dsp GCU0
+FDRE_inst_b DFF
+IBUF_inst0 INPAD
+LUT2_LUT2__config_inst4_inst_b LUT5
+LUT3_LUT3__config_inst5_inst_b LRAM
+LUT4_LUT4__config_inst6_inst_b CLA4
+LUT5_LUT5__config_inst7_inst_b SHIFT
+LUT6_LUT6__config_inst8_inst_bb LUT6
+OBUF_inst25 OUTPAD
+clk10_IBUF_inst GLOBAL_CLK

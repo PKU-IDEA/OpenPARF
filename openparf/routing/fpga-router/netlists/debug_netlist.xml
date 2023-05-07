@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<netlist>
+	<net name="net_71226" result="Unrouted">
+		<source pin="FUAT.FUA[0].BLE[1].LUT[0].LUT6[0].O[0]" x="103" y="66" />
+		<global_result x="103" y="66" />
+		<global_result x="104" y="65" />
+		<global_result x="104" y="66" />
+		<sink pin="RAMBT.RAMB[0].DSP48[0].C[15]" x="104" y="65" />
+	</net>
+</netlist>

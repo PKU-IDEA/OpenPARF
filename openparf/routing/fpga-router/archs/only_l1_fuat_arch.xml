@@ -1,0 +1,813 @@
+<?xml version="1.0"?>
+<arch>
+<primitives>
+<primitive name="INPAD">
+    <output name="DO"  width="1"/>
+    <input name="DI"  width="1"/>
+    <input name="SR"  width="1" type="RESET"/>
+    <input name="CE"  width="1" type="ENABLE"/>
+    <input name="CLK"  width="1" type="CLOCK"/>
+</primitive>
+       
+<primitive name="OUTPAD">
+    <output name="DO"  width="1"/>
+    <input name="DI"  width="1"/>
+    <input name="SR"  width="1" type="RESET"/>
+    <input name="CE"  width="1" type="ENABLE"/>
+    <input name="CLK"  width="1" type="CLOCK"/>
+</primitive>
+
+<primitive name="GCU0">
+    <input name="CLK"  width="1" type="CLOCK"/>
+    <input name="I"  width="330"/>
+    <output name="O"  width="207"/>
+</primitive>
+
+<primitive name="HRAM">
+    <output name="DOUT"  width="72"/>
+    <input name="CLK"  width="1" type="CLOCK"/>
+    <input name="REN"  width="1" type="ENABLE"/>
+    <input name="WEN"  width="1" type="ENABLE"/>
+    <input name="AR"  width="11"/>
+    <input name="AW"  width="11"/>
+    <input name="DIN"  width="72"/>
+    <input name="ERRINS"  width="1"/>
+    <input name="ERRIND"  width="1"/>
+    <input name="RST_N"  width="1" type="RESET"/>
+    <output name="ERRFLAGS"  width="1"/>
+    <output name="ERRFLAGD"  width="1"/>
+    <output name="ERRADDR"  width="11"/>
+</primitive>
+
+<primitive name="BRAM36K">
+    <output name="SUB_DOUT"  width="36"/>
+    <output name="DOUT"  width="36"/>
+    <input name="DIN"  width="36"/>
+    <input name="AW"  width="11"/>
+    <input name="WEN"  width="1" type="ENABLE"/>
+    <input name="AR"  width="11"/>
+    <input name="REN"  width="1" type="ENABLE"/>
+    <input name="SUB_DIN"  width="36"/>
+    <input name="SUB_AW"  width="11"/>
+    <input name="SUB_WEN"  width="1"/>
+    <input name="SUB_AR"  width="11"/>
+    <input name="SUB_REN"  width="1"/>
+    <input name="TP_U0_LS"  width="1"/>
+    <input name="TP_U1_LS"  width="1"/>
+    <input name="CLR_INNER_BP0_FIFO"  width="1"/>
+    <input name="CLR_INNER_BP1_FIFO"  width="1"/>
+    <input name="FIFO_CLR"  width="1"/>
+    <input name="FIFO_D_R_RDY"  width="1"/>
+    <input name="ERRINS"  width="1"/>
+    <input name="ERRIND"  width="1"/>
+    <input name="CLK_USER0_W"  width="1" type="CLOCK"/>
+    <input name="CLK_USER0_R"  width="1" type="CLOCK"/>
+    <input name="CLK_USER1_W"  width="1" type="CLOCK"/>
+    <input name="CLK_USER1_R"  width="1" type="CLOCK"/>
+    <input name="RST_BRAM_N"  width="1" type="RESET"/>
+    <input name="RAM0_MBIST_WM0"  width="1"/>
+    <input name="RAM0_MBIST_WM1"  width="1"/>
+    <input name="RAM1_MBIST_WM0"  width="1"/>
+    <input name="RAM1_MBIST_WM1"  width="1"/>
+    <output name="SDP0_RD_VLD"  width="1"/>
+    <output name="SDP1_RD_VLD"  width="1"/>
+    <output name="D_R_AEMPTY"  width="1"/>
+    <output name="D_R_EMPTY"  width="1"/>
+    <output name="ECC_AR"  width="9"/>
+    <output name="ERRFLAGS"  width="1"/>
+    <output name="ERRFLAGD"  width="1"/>
+    <output name="FIFO_D_W_RDY"  width="1"/>
+    <output name="D_DOUT_VLD"  width="1"/>
+    <output name="D_W_AFULL"  width="1"/>
+    <output name="D_W_FULL"  width="1"/>
+</primitive>
+
+<primitive name="DFF">
+    <output name="Q"  width="1"/>
+    <input name="D"  width="1"/>
+    <input name="SR"  width="1" type="RESET"/>
+    <input name="CE"  width="1" type="ENABLE"/>
+    <input name="C"  width="1" type="CLOCK"/>
+</primitive>
+
+<primitive name="LUT5">
+    <output name="OUT"  width="1"/>
+    <input name="IN"  width="6"/>
+    <input name="LCAS_IN"  width="1"/>
+    <input name="CCAS_IN"  width="1"/>
+</primitive>
+
+<primitive name="LUT6">
+    <output name="OUT"  width="2"/>
+    <input name="IN"  width="6"/>
+    <input name="LCAS_IN"  width="1"/>
+    <input name="CCAS_IN"  width="1"/>
+    <output name="P"  width="1"/>
+    <output name="G"  width="1"/>
+</primitive>
+
+<primitive name="LRAM">
+    <output name="O"  width="2"/>
+    <input name="CE"  width="1" type="ENABLE"/>
+    <input name="A"  width="6"/>
+    <input name="WA"  width="6"/>
+    <input name="D"  width="2"/>
+    <input name="CLK"  width="1" type="CLOCK"/>
+</primitive>
+
+<primitive name="GLOBAL_CLK">
+    <output name="IN"  width="1"/>
+    <input name="VIN"  width="1"/>
+</primitive>
+
+<primitive name="GCLK_BUF">
+    <output name="OUT"  width="1"/>
+    <input name="IN"  width="1"/>
+</primitive>
+
+<primitive name="SHIFT">
+    <input name="A"  width="6"/>
+    <input name="SFTIN"  width="1"/>
+    <input name="CE"  width="1" type="ENABLE"/>
+    <input name="CLK"  width="1" type="CLOCK"/>
+    <output name="SO"  width="1"/>
+    <output name="Q"  width="1"/>
+</primitive>
+
+</primitives>
+
+<global_sw name="GSW_A">
+	<input name="i_clk" width="8" type="clock"/>
+	<input name="o_clk" width="8" type="clock"/>
+
+	<input  name="i_el1" width="8" direction="east" length="1" output="o_wl1"/>
+
+	<input  name="i_nl1" width="8" direction="north" length="1" output="o_sl1"/>
+
+	<input  name="i_wl1" width="8" direction="west" length="1" output="o_el1"/>
+
+	<input  name="i_sl1" width="8" direction="south" length="1" output="o_nl1"/>
+
+
+	<input  name="i_lsw_direct" width="24"/>
+	<input  name="i_lsw_switch" width="16"/>
+	<input  name="i_lsw_special" width="164"/>
+
+	<output name="o_lsw" width="32"/>
+
+	<interconnect>
+		<direct name="clk_byp" inputs="i_clk" outputs="o_clk" />
+
+		<direct name="gsw_to_lsw" inputs="i_el1,i_nl1,i_wl1,i_sl1" outputs="o_lsw" />
+
+        <connect name="o_el1_0" inputs="i_nl1[0],i_wl1[0],i_sl1[0]" outputs="o_el1[0]" />
+        <connect name="o_el1_1" inputs="i_nl1[1],i_wl1[1],i_sl1[1]" outputs="o_el1[1]" />
+        <connect name="o_el1_2" inputs="i_nl1[2],i_wl1[2],i_sl1[2]" outputs="o_el1[2]" />
+        <connect name="o_el1_3" inputs="i_nl1[3],i_wl1[3],i_sl1[3]" outputs="o_el1[3]" />
+        <connect name="o_el1_4" inputs="i_nl1[4],i_wl1[4],i_sl1[4]" outputs="o_el1[4]" />
+        <connect name="o_el1_5" inputs="i_nl1[5],i_wl1[5],i_sl1[5]" outputs="o_el1[5]" />
+        <connect name="o_el1_6" inputs="i_nl1[6],i_wl1[6],i_sl1[6]" outputs="o_el1[6]" />
+        <connect name="o_el1_7" inputs="i_nl1[7],i_wl1[7],i_sl1[7]" outputs="o_el1[7]" />
+
+        <connect name="o_nl1_0" inputs="i_el1[0],i_wl1[0],i_sl1[0]" outputs="o_nl1[0]" />
+        <connect name="o_nl1_1" inputs="i_el1[1],i_wl1[1],i_sl1[1]" outputs="o_nl1[1]" />
+        <connect name="o_nl1_2" inputs="i_el1[2],i_wl1[2],i_sl1[2]" outputs="o_nl1[2]" />
+        <connect name="o_nl1_3" inputs="i_el1[3],i_wl1[3],i_sl1[3]" outputs="o_nl1[3]" />
+        <connect name="o_nl1_4" inputs="i_el1[4],i_wl1[4],i_sl1[4]" outputs="o_nl1[4]" />
+        <connect name="o_nl1_5" inputs="i_el1[5],i_wl1[5],i_sl1[5]" outputs="o_nl1[5]" />
+        <connect name="o_nl1_6" inputs="i_el1[6],i_wl1[6],i_sl1[6]" outputs="o_nl1[6]" />
+        <connect name="o_nl1_7" inputs="i_el1[7],i_wl1[7],i_sl1[7]" outputs="o_nl1[7]" />
+
+        <connect name="o_wl1_0" inputs="i_el1[0],i_nl1[0],i_sl1[0]" outputs="o_wl1[0]" />
+        <connect name="o_wl1_1" inputs="i_el1[1],i_nl1[1],i_sl1[1]" outputs="o_wl1[1]" />
+        <connect name="o_wl1_2" inputs="i_el1[2],i_nl1[2],i_sl1[2]" outputs="o_wl1[2]" />
+        <connect name="o_wl1_3" inputs="i_el1[3],i_nl1[3],i_sl1[3]" outputs="o_wl1[3]" />
+        <connect name="o_wl1_4" inputs="i_el1[4],i_nl1[4],i_sl1[4]" outputs="o_wl1[4]" />
+        <connect name="o_wl1_5" inputs="i_el1[5],i_nl1[5],i_sl1[5]" outputs="o_wl1[5]" />
+        <connect name="o_wl1_6" inputs="i_el1[6],i_nl1[6],i_sl1[6]" outputs="o_wl1[6]" />
+        <connect name="o_wl1_7" inputs="i_el1[7],i_nl1[7],i_sl1[7]" outputs="o_wl1[7]" />
+
+        <connect name="o_sl1_0" inputs="i_el1[0],i_nl1[0],i_wl1[0]" outputs="o_sl1[0]" />
+        <connect name="o_sl1_1" inputs="i_el1[1],i_nl1[1],i_wl1[1]" outputs="o_sl1[1]" />
+        <connect name="o_sl1_2" inputs="i_el1[2],i_nl1[2],i_wl1[2]" outputs="o_sl1[2]" />
+        <connect name="o_sl1_3" inputs="i_el1[3],i_nl1[3],i_wl1[3]" outputs="o_sl1[3]" />
+        <connect name="o_sl1_4" inputs="i_el1[4],i_nl1[4],i_wl1[4]" outputs="o_sl1[4]" />
+        <connect name="o_sl1_5" inputs="i_el1[5],i_nl1[5],i_wl1[5]" outputs="o_sl1[5]" />
+        <connect name="o_sl1_6" inputs="i_el1[6],i_nl1[6],i_wl1[6]" outputs="o_sl1[6]" />
+        <connect name="o_sl1_7" inputs="i_el1[7],i_nl1[7],i_wl1[7]" outputs="o_sl1[7]" />
+
+
+	</interconnect>
+</global_sw>
+
+<tile_blocks>
+	<tile type="DUMMY" width="1" height="1">
+		<inst name="DUMMY" type="DUMMY" num="1"/> 
+	</tile>
+	<tile type="IO" width="1" height="1">
+		<input name="i_clk" width="8" type="clock"/>
+		<input name="o_clk" width="8" type="clock"/>
+
+		<input  name="i_el1" width="8" />
+		<output name="o_el1" width="8" />
+
+		<input  name="i_wl1" width="8" />
+		<output name="o_wl1" width="8" />
+
+		<input  name="i_sl1" width="8" />
+		<output name="o_sl1" width="8" />
+
+		<input  name="i_nl1" width="8" />
+		<output name="o_nl1" width="8" />
+
+		<input name="IN"  width="24"/>
+		<output name="OUT" width="24"/>
+
+		<inst name="inpad" type="INPAD" num="24"/>
+		<inst name="outpad" type="OUTPAD" num="24"/>
+
+		<inst name="gsw" type="GSW_A"/>
+
+		<interconnect>
+			<broadcast name="CLK_0" inputs="lsw[0].o_fu_ctrl[0]" outputs="INPAD.CLK"/>
+			<broadcast name="CLK_1" inputs="lsw[0].o_fu_ctrl[1]" outputs="OUTPAD.CLK"/>
+			<broadcast name="SR_0" inputs="lsw[0].o_fu_ctrl[2]" outputs="INPAD.SR"/>
+			<broadcast name="SR_1" inputs="lsw[0].o_fu_ctrl[3]" outputs="OUTPAD.SR"/>
+			<broadcast name="CE_0" inputs="lsw[0].o_fu_ctrl[4]" outputs="INPAD.CE"/>
+			<broadcast name="CE_1" inputs="lsw[0].o_fu_ctrl[5]" outputs="OUTPAD.CE"/>
+
+			<direct name="do_to_top" inputs="OUTPAD.DO" outputs="OUT"/>
+			<direct name="top_to_di" inputs="IN" outputs="INPAD.DI"/>
+
+			<direct name="inpad_to_lsw" inputs="INPAD.DO" outputs="lsw[0].i_fu"/>
+			<direct name="lsw_to_ouptpad" inputs="lsw[0].o_fu" outputs="OUTPAD.DI"/>
+
+			<!-- common connection -->
+			<direct name="clk_gsw_to_lsw" inputs="gsw[0].o_clk" outputs="lsw[0].i_gsw_clk"/>
+
+			<direct name="i_clk" inputs="i_clk" outputs="gsw[0].i_clk"/>
+			<direct name="o_clk" inputs="gsw[0].o_clk" outputs="o_clk"/>
+
+			<direct name="i_el1" inputs="i_el1" outputs="gsw[0].i_el1"/>
+			<direct name="i_nl1" inputs="i_nl1" outputs="gsw[0].i_nl1"/>
+			<direct name="i_wl1" inputs="i_wl1" outputs="gsw[0].i_wl1"/>
+			<direct name="i_sl1" inputs="i_sl1" outputs="gsw[0].i_sl1"/>
+
+			<direct name="o_el1" inputs="gsw[0].o_el1" outputs="o_el1"/>
+			<direct name="o_nl1" inputs="gsw[0].o_nl1" outputs="o_nl1"/>
+			<direct name="o_wl1" inputs="gsw[0].o_wl1" outputs="o_wl1"/>
+			<direct name="o_sl1" inputs="gsw[0].o_sl1" outputs="o_sl1"/>
+		</interconnect>
+
+		<local_sw name="lsw" num="1">
+			<input  name="i_gsw" width="32"/>
+			<input  name="i_gsw_special" width="2"/>
+			<input  name="i_gsw_clk" width="8"/>
+
+			<output  name="o_gsw_direct" width="24"/>
+			<output  name="o_gsw_switch" width="16"/>
+			<output  name="o_gsw_special" width="164"/>
+
+			<input name="i_fu" width="24"/>
+			<output name="o_fu" width="24"/>
+
+			<output name="o_fu_ctrl" width="6"/>
+
+			<interconnect>
+				<!-- IO to gsw -->
+				<direct name="o_gsw_direct_15_8" inputs="i_fu[3],i_fu[7],i_fu[11],i_fu[9],i_fu[13],i_fu[15],i_fu[19],i_fu[23]" outputs="o_gsw_direct[15:8]"/>
+				<direct name="o_gsw_direct_23_16" inputs="i_fu[3],i_fu[7],i_fu[11],i_fu[9],i_fu[13],i_fu[15],i_fu[19],i_fu[23]" outputs="o_gsw_direct[23:16]"/>
+
+				<connect name="o_gsw_switch"  inputs="i_fu" outputs="o_gsw_switch"/>
+				
+			    <connect name="o_gsw_direct"  inputs="i_fu" outputs="o_gsw_direct[7:0]"/>
+
+				<!-- gsw to IO -->
+                <connect name="i_gsw_0" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[0]" />
+                <connect name="i_gsw_1" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[1]" />
+                <connect name="i_gsw_2" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[2]" />
+                <connect name="i_gsw_3" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[3]" />
+                <connect name="i_gsw_4" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[4]" />
+                <connect name="i_gsw_5" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[5]" />
+                <connect name="i_gsw_6" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[6]" />
+                <connect name="i_gsw_7" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[7]" />
+                <connect name="i_gsw_8" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[8]" />
+                <connect name="i_gsw_9" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[9]" />
+                <connect name="i_gsw_10" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[10]" />
+                <connect name="i_gsw_11" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[11]" />
+                <connect name="i_gsw_12" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[12]" />
+                <connect name="i_gsw_13" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[13]" />
+                <connect name="i_gsw_14" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[14]" />
+                <connect name="i_gsw_15" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[15]" />
+                <connect name="i_gsw_16" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[16]" />
+                <connect name="i_gsw_17" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[17]" />
+                <connect name="i_gsw_18" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[18]" />
+                <connect name="i_gsw_19" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[19]" />
+                <connect name="i_gsw_20" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[20]" />
+                <connect name="i_gsw_21" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[21]" />
+                <connect name="i_gsw_22" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[22]" />
+                <connect name="i_gsw_23" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[23]" />
+
+                <connect name="o_fu_ctrl" inputs="i_gsw[2],i_gsw[10],i_gsw[18],i_gsw[26],i_gsw_clk[0],i_gsw_clk[1],i_gsw_clk[2],i_gsw_clk[3],i_gsw_clk[4],i_gsw_clk[5],i_gsw_clk[6],i_gsw_clk[7]" outputs="o_fu_ctrl" />
+
+			</interconnect>
+		</local_sw>
+	</tile>
+
+	<tile type="FUAT" width="1" heigh="1">
+		<input name="i_clk" width="8" type="clock"/>
+		<input name="o_clk" width="8" type="clock"/>
+
+		<input  name="i_el1" width="8" />
+		<output name="o_el1" width="8" />
+
+		<input  name="i_wl1" width="8" />
+		<output name="o_wl1" width="8" />
+
+		<input  name="i_sl1" width="8" />
+		<output name="o_sl1" width="8" />
+
+		<input  name="i_nl1" width="8" />
+		<output name="o_nl1" width="8" />
+
+		<module name="FUA" num="1">
+			<input name="clk"  width="2" type="clock"/>
+			<input name="ce"  width="4" type="enable"/>
+			<input name="sr"  width="2" type="reset"/>
+
+			<input name="in0"  width="6"/>
+			<input name="in1"  width="6"/>
+			<input name="in2"  width="6"/>
+			<input name="in3"  width="6"/>
+			<input name="in4"  width="6"/>
+			<input name="in5"  width="6"/>
+			<input name="in6"  width="6"/>
+			<input name="in7"  width="6"/>
+			<input name="byp0"  width="8"/>
+			<input name="byp1"  width="8"/>
+
+			<output name="O" width="8"/>
+			<output name="Q0" width="8"/>
+			<output name="Q1" width="8"/>
+
+			<module name="BLE" num="8">
+				<inst name="LUT" num="1">
+					<mode name="TWO_LUT5">
+						<inst type="LUT5" num="2"/>
+						<interconnect>
+						</interconnect>
+					</mode>
+					<mode name="LUT6">
+					</mode>
+				</inst>
+			</module>
+		</module>
+
+		<inst name="gsw" type="GSW_A" num="1"/>
+
+		<interconnect>
+			<direct name="gsw_to_lsw" inputs="gsw[0].o_lsw" outputs="lsw[0].i_gsw"/>
+			<direct name="gsw_special_to_lsw" inputs="gsw[0].o_lsw_special" outputs="lsw[0].i_gsw_special"/>
+
+			<direct name="lsw_direct_to_gsw" inputs="lsw[0].o_gsw_direct" outputs="gsw[0].i_lsw_direct"/>
+			<direct name="lsw_switch_to_gsw" inputs="lsw[0].o_gsw_switch" outputs="gsw[0].i_lsw_switch"/>
+			<direct name="lsw_special_to_gsw" inputs="lsw[0].o_gsw_special" outputs="gsw[0].i_lsw_special"/>
+
+			<direct name ="fua_to_lsw" inputs="FUA.Q1,FUA.Q0,FUA.O" outputs="lsw[0].i_fu"/>
+			<direct name ="lsw_direct_to_gsw" input="lsw[0].o_gsw_direct" outputs="gsw[0].i_lsw_direct"/>
+
+			<direct name ="lsw_to_fua_in" inputs="lsw[0].o_fu" outputs="FUA.in7,FUA.in6,FUA.in5,FUA.in4,FUA.in3,FUA.in2,FUA.in1,FUA.in0"/>
+
+			<direct name="byp" inputs="lsw[0].o_fu_byp" outputs="FUA.byp1,FUA.byp0"/>
+
+			<!-- ctrl signals -->
+			<direct name="CLK" inputs="lsw[0].o_fu_ctrl[1:0]" outputs="FUA.clk"/>
+			<direct name="SR" inputs="lsw[0].o_fu_ctrl[3:2]" outputs="FUA.sr"/>
+			<direct name="CE" inputs="lsw[0].o_fu_ctrl[7:4]" outputs="FUA.ce"/>
+
+			<!-- common connection -->
+			<direct name="clk_gsw_to_lsw" inputs="gsw[0].o_clk" outputs="lsw[0].i_gsw_clk"/>
+
+			<direct name="i_clk" inputs="i_clk" outputs="gsw[0].i_clk"/>
+			<direct name="o_clk" inputs="gsw[0].o_clk" outputs="o_clk"/>
+
+            <direct name="i_el1" inputs="i_el1" outputs="gsw[0].i_el1"/>
+            <direct name="o_el1" inputs="gsw[0].o_el1" outputs="o_el1"/>
+            <direct name="i_nl1" inputs="i_nl1" outputs="gsw[0].i_nl1"/>
+            <direct name="o_nl1" inputs="gsw[0].o_nl1" outputs="o_nl1"/>
+            <direct name="i_wl1" inputs="i_wl1" outputs="gsw[0].i_wl1"/>
+            <direct name="o_wl1" inputs="gsw[0].o_wl1" outputs="o_wl1"/>
+            <direct name="i_sl1" inputs="i_sl1" outputs="gsw[0].i_sl1"/>
+            <direct name="o_sl1" inputs="gsw[0].o_sl1" outputs="o_sl1"/>
+		
+		</interconnect>
+
+		<local_sw name="lsw" num="1">
+			<input  name="i_gsw" width="96"/>
+			<input  name="i_gsw_special" width="2"/>
+
+			<output  name="o_gsw_direct" width="24"/>
+			<output  name="o_gsw_switch" width="16"/>
+			<output  name="o_gsw_special" width="164"/>
+
+			<input name="i_fu" width="24"/>
+
+			<output name="o_fu" width="24"/>
+			<output name="o_fu_ctrl" width="8"/>
+			<output name="o_fu_byp" width="16"/>
+
+			<wire name="hfan" width="2"/>
+
+			<interconnect>
+				<!-- internal signals -->
+		        <connect name="hfan" inputs="i_gsw_clk[0],i_gsw_clk[1],i_gsw_clk[2],i_gsw_clk[3],i_gsw_clk[4],i_gsw_clk[5],i_gsw_clk[6],i_gsw_clk[7],o_fu_byp[1],o_fu_byp[4],o_fu_byp[6]" outputs="hfan"/>
+
+				<!-- gsw to FUA -->
+                <connect name="o_fu_byp_0" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29],o_fu_byp[1],o_fu_byp[2],o_gsw_switch[6]" outputs="o_fu_byp[0]" />
+                <connect name="o_fu_byp_1" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31],o_fu_byp[0],o_fu_byp[4],o_gsw_switch[2]" outputs="o_fu_byp[1]" />
+                <connect name="o_fu_byp_2" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28],o_fu_byp[5],o_fu_byp[6],o_gsw_switch[5]" outputs="o_fu_byp[2]" />
+                <connect name="o_fu_byp_3" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30],o_fu_byp[8],o_fu_byp[10],o_gsw_switch[1]" outputs="o_fu_byp[3]" />
+                <connect name="o_fu_byp_4" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28],o_fu_byp[7],o_fu_byp[15],o_gsw_switch[15]" outputs="o_fu_byp[4]" />
+                <connect name="o_fu_byp_5" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30],o_fu_byp[11],o_fu_byp[13],o_gsw_switch[11]" outputs="o_fu_byp[5]" />
+                <connect name="o_fu_byp_6" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29],o_fu_byp[3],o_fu_byp[14],o_gsw_switch[12]" outputs="o_fu_byp[6]" />
+                <connect name="o_fu_byp_7" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31],o_fu_byp[9],o_fu_byp[12],o_gsw_switch[8]" outputs="o_fu_byp[7]" />
+                <connect name="o_fu_byp_8" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28],o_fu_byp[5],o_fu_byp[6],o_gsw_switch[7]" outputs="o_fu_byp[8]" />
+                <connect name="o_fu_byp_9" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30],o_fu_byp[8],o_fu_byp[10],o_gsw_switch[3]" outputs="o_fu_byp[9]" />
+                <connect name="o_fu_byp_10" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29],o_fu_byp[1],o_fu_byp[2],o_gsw_switch[4]" outputs="o_fu_byp[10]" />
+                <connect name="o_fu_byp_11" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31],o_fu_byp[0],o_fu_byp[4],o_gsw_switch[0]" outputs="o_fu_byp[11]" />
+                <connect name="o_fu_byp_12" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29],o_fu_byp[3],o_fu_byp[14],o_gsw_switch[14]" outputs="o_fu_byp[12]" />
+                <connect name="o_fu_byp_13" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31],o_fu_byp[9],o_fu_byp[12],o_gsw_switch[10]" outputs="o_fu_byp[13]" />
+                <connect name="o_fu_byp_14" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28],o_fu_byp[7],o_fu_byp[15],o_gsw_switch[13]" outputs="o_fu_byp[14]" />
+                <connect name="o_fu_byp_15" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30],o_fu_byp[11],o_fu_byp[13],o_gsw_switch[9]" outputs="o_fu_byp[15]" />
+
+
+                <connect name="i_gsw_0" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[0]" />
+                <connect name="i_gsw_1" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[1]" />
+                <connect name="i_gsw_2" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[2]" />
+                <connect name="i_gsw_3" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[3]" />
+                <connect name="i_gsw_4" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[4]" />
+                <connect name="i_gsw_5" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[5]" />
+                <connect name="i_gsw_6" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[6]" />
+                <connect name="i_gsw_7" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[7]" />
+                <connect name="i_gsw_8" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[8]" />
+                <connect name="i_gsw_9" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[9]" />
+                <connect name="i_gsw_10" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[10]" />
+                <connect name="i_gsw_11" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[11]" />
+                <connect name="i_gsw_12" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[12]" />
+                <connect name="i_gsw_13" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[13]" />
+                <connect name="i_gsw_14" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[14]" />
+                <connect name="i_gsw_15" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[15]" />
+                <connect name="i_gsw_16" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[16]" />
+                <connect name="i_gsw_17" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[17]" />
+                <connect name="i_gsw_18" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[18]" />
+                <connect name="i_gsw_19" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[19]" />
+                <connect name="i_gsw_20" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[20]" />
+                <connect name="i_gsw_21" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[21]" />
+                <connect name="i_gsw_22" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[22]" />
+                <connect name="i_gsw_23" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[23]" />
+                <connect name="i_gsw_24" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[24]" />
+                <connect name="i_gsw_25" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[25]" />
+                <connect name="i_gsw_26" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[26]" />
+                <connect name="i_gsw_27" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[27]" />
+                <connect name="i_gsw_28" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[28]" />
+                <connect name="i_gsw_29" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[29]" />
+                <connect name="i_gsw_30" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[30]" />
+                <connect name="i_gsw_31" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[31]" />
+                <connect name="i_gsw_32" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[32]" />
+                <connect name="i_gsw_33" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[33]" />
+                <connect name="i_gsw_34" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[34]" />
+                <connect name="i_gsw_35" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[35]" />
+                <connect name="i_gsw_36" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[36]" />
+                <connect name="i_gsw_37" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[37]" />
+                <connect name="i_gsw_38" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[38]" />
+                <connect name="i_gsw_39" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[39]" />
+                <connect name="i_gsw_40" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[40]" />
+                <connect name="i_gsw_41" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[41]" />
+                <connect name="i_gsw_42" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[42]" />
+                <connect name="i_gsw_43" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[43]" />
+                <connect name="i_gsw_44" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[44]" />
+                <connect name="i_gsw_45" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[45]" />
+                <connect name="i_gsw_46" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[46]" />
+                <connect name="i_gsw_47" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[47]" />
+
+				<!-- gsw to FUA: ctrl signals -->
+				<connect name="o_fu_ctrl_clk" inputs="i_gsw[7],i_gsw[15],i_gsw[23],i_gsw[31],i_gsw_clk[0],i_gsw_clk[1],i_gsw_clk[2],i_gsw_clk[3],i_gsw_clk[4],i_gsw_clk[5],i_gsw_clk[6],i_gsw_clk[7]" outputs="o_fu_ctrl[1:0]" />
+				<connect name="o_fu_ctrl_ce_sr" inputs="i_gsw[7],i_gsw[15],i_gsw[23],i_gsw[31],i_gsw_clk[0],i_gsw_clk[1],i_gsw_clk[2],i_gsw_clk[3],i_gsw_clk[4],i_gsw_clk[5],i_gsw_clk[6],i_gsw_clk[7],hfan[0],hfan[1]" outputs="o_fu_ctrl[7:2]" />
+
+				<!-- FUA to gsw-->
+                <connect name="o_gsw_switch_0" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[0]" />
+                <connect name="o_gsw_switch_1" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[1]" />
+                <connect name="o_gsw_switch_2" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[2]" />
+                <connect name="o_gsw_switch_3" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[3]" />
+                <connect name="o_gsw_switch_4" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[4]" />
+                <connect name="o_gsw_switch_5" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[5]" />
+                <connect name="o_gsw_switch_6" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[6]" />
+                <connect name="o_gsw_switch_7" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[7]" />
+                <connect name="o_gsw_switch_8" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[8]" />
+                <connect name="o_gsw_switch_9" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[9]" />
+                <connect name="o_gsw_switch_10" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[10]" />
+                <connect name="o_gsw_switch_11" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[11]" />
+                <connect name="o_gsw_switch_12" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[12]" />
+                <connect name="o_gsw_switch_13" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[13]" />
+                <connect name="o_gsw_switch_14" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[14]" />
+                <connect name="o_gsw_switch_15" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[15]" />
+
+
+				<direct name ="o_gsw_direct" input="i_fu" outputs="o_gsw_direct"/>
+				<direct name ="o_gsw_direct" input="i_fu" outputs="o_gsw_direct"/>
+			</interconnect>
+		</local_sw>
+	</tile>
+
+	<tile type="FUBT" width="1" heigh="1">
+		<input name="i_clk" width="8" type="clock"/>
+		<input name="o_clk" width="8" type="clock"/>
+
+		<input  name="i_el1" width="8" />
+		<output name="o_el1" width="8" />
+
+		<input  name="i_wl1" width="8" />
+		<output name="o_wl1" width="8" />
+
+		<input  name="i_sl1" width="8" />
+		<output name="o_sl1" width="8" />
+
+		<input  name="i_nl1" width="8" />
+		<output name="o_nl1" width="8" />
+
+
+		<module name="FUB" num="1">
+			<input name="clk"  width="2" type="clock"/>
+			<input name="ce"  width="4" type="enable"/>
+			<input name="sr"  width="2" type="reset"/>
+			<input name="mclk"  width="1" type="clock"/>
+			<input name="we"  width="1" type="enable"/>
+
+			<input name="in0"  width="6"/>
+			<input name="in1"  width="6"/>
+			<input name="in2"  width="6"/>
+			<input name="in3"  width="6"/>
+			<input name="in4"  width="6"/>
+			<input name="in5"  width="6"/>
+			<input name="in6"  width="6"/>
+			<input name="in7"  width="6"/>
+			<input name="byp0"  width="8"/>
+			<input name="byp1"  width="8"/>
+
+			<output name="O" width="8"/>
+			<output name="Q0" width="8"/>
+			<output name="Q1" width="8"/>
+
+			<module name="BLE" num="8">
+				<inst name="LUT" num="1">
+					<mode name="TWO_LUT5">
+						<inst type="LUT5" num="2"/>
+						<interconnect>
+						</interconnect>
+					</mode>
+					<mode name="LUT6">
+					</mode>
+				</inst>
+			</module>
+		</module>
+
+		<inst name="gsw" type="GSW_A" num="1"/>
+
+		<interconnect>
+			<direct name="gsw_to_lsw" inputs="gsw[0].o_lsw" outputs="lsw[0].i_gsw"/>
+			<direct name="gsw_special_to_lsw" inputs="gsw[0].o_lsw_special" outputs="lsw[0].i_gsw_special"/>
+
+			<direct name="lsw_direct_to_gsw" inputs="lsw[0].o_gsw_direct" outputs="gsw[0].i_lsw_direct"/>
+			<direct name="lsw_switch_to_gsw" inputs="lsw[0].o_gsw_switch" outputs="gsw[0].i_lsw_switch"/>
+			<direct name="lsw_special_to_gsw" inputs="lsw[0].o_gsw_special" outputs="gsw[0].i_lsw_special"/>
+
+			<direct name ="fua_to_lsw" inputs="FUB.Q1,FUB.Q0,FUB.O" outputs="lsw[0].i_fu"/>
+			<direct name ="lsw_direct_to_gsw" input="lsw[0].o_gsw_direct" outputs="gsw[0].i_lsw_direct"/>
+
+			<direct name ="lsw_to_fua_in" inputs="lsw[0].o_fu" outputs="FUB.in7,FUB.in6,FUB.in5,FUB.in4,FUB.in3,FUB.in2,FUB.in1,FUB.in0"/>
+
+			<direct name="byp" inputs="lsw[0].o_fu_byp" outputs="FUB.byp1,FUB.byp0"/>
+
+			<!-- ctrl signals -->
+			<direct name="CLK" inputs="lsw[0].o_fu_ctrl[1:0]" outputs="FUB.clk"/>
+			<direct name="SR" inputs="lsw[0].o_fu_ctrl[3:2]" outputs="FUB.sr"/>
+			<direct name="CE" inputs="lsw[0].o_fu_ctrl[7:4]" outputs="FUB.ce"/>
+			<direct name="WE" inputs="lsw[0].o_fu_ctrl[8]" outputs="FUB.we"/>
+			<direct name="MCLK" inputs="lsw[0].o_fu_ctrl[9]" outputs="FUB.mclk"/>
+
+			<!-- common connection -->
+			<direct name="clk_gsw_to_lsw" inputs="gsw[0].o_clk" outputs="lsw[0].i_gsw_clk"/>
+
+			<direct name="i_clk" inputs="i_clk" outputs="gsw[0].i_clk"/>
+			<direct name="o_clk" inputs="gsw[0].o_clk" outputs="o_clk"/>
+
+            <direct name="i_el1" inputs="i_el1" outputs="gsw[0].i_el1"/>
+            <direct name="o_el1" inputs="gsw[0].o_el1" outputs="o_el1"/>
+            <direct name="i_nl1" inputs="i_nl1" outputs="gsw[0].i_nl1"/>
+            <direct name="o_nl1" inputs="gsw[0].o_nl1" outputs="o_nl1"/>
+            <direct name="i_wl1" inputs="i_wl1" outputs="gsw[0].i_wl1"/>
+            <direct name="o_wl1" inputs="gsw[0].o_wl1" outputs="o_wl1"/>
+            <direct name="i_sl1" inputs="i_sl1" outputs="gsw[0].i_sl1"/>
+            <direct name="o_sl1" inputs="gsw[0].o_sl1" outputs="o_sl1"/>
+		
+		</interconnect>
+
+		<local_sw name="lsw" num="1">
+			<input  name="i_gsw" width="96"/>
+			<input  name="i_gsw_special" width="2"/>
+
+			<output  name="o_gsw_direct" width="24"/>
+			<output  name="o_gsw_switch" width="16"/>
+			<output  name="o_gsw_special" width="164"/>
+
+			<input name="i_fu" width="24"/>
+
+			<output name="o_fu" width="24"/>
+			<output name="o_fu_ctrl" width="10"/>
+			<output name="o_fu_byp" width="16"/>
+
+			<wire name="hfan" width="2"/>
+
+			<interconnect>
+				<!-- internal signals -->
+		        <connect name="hfan" inputs="i_gsw_clk[0],i_gsw_clk[1],i_gsw_clk[2],i_gsw_clk[3],i_gsw_clk[4],i_gsw_clk[5],i_gsw_clk[6],i_gsw_clk[7],o_fu_byp[1],o_fu_byp[4],o_fu_byp[6]" outputs="hfan"/>
+
+				<!-- gsw to FUB -->
+                <connect name="o_fu_byp_0" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29],o_fu_byp[1],o_fu_byp[2],o_gsw_switch[6]" outputs="o_fu_byp[0]" />
+                <connect name="o_fu_byp_1" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31],o_fu_byp[0],o_fu_byp[4],o_gsw_switch[2]" outputs="o_fu_byp[1]" />
+                <connect name="o_fu_byp_2" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28],o_fu_byp[5],o_fu_byp[6],o_gsw_switch[5]" outputs="o_fu_byp[2]" />
+                <connect name="o_fu_byp_3" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30],o_fu_byp[8],o_fu_byp[10],o_gsw_switch[1]" outputs="o_fu_byp[3]" />
+                <connect name="o_fu_byp_4" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28],o_fu_byp[7],o_fu_byp[15],o_gsw_switch[15]" outputs="o_fu_byp[4]" />
+                <connect name="o_fu_byp_5" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30],o_fu_byp[11],o_fu_byp[13],o_gsw_switch[11]" outputs="o_fu_byp[5]" />
+                <connect name="o_fu_byp_6" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29],o_fu_byp[3],o_fu_byp[14],o_gsw_switch[12]" outputs="o_fu_byp[6]" />
+                <connect name="o_fu_byp_7" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31],o_fu_byp[9],o_fu_byp[12],o_gsw_switch[8]" outputs="o_fu_byp[7]" />
+                <connect name="o_fu_byp_8" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28],o_fu_byp[5],o_fu_byp[6],o_gsw_switch[7]" outputs="o_fu_byp[8]" />
+                <connect name="o_fu_byp_9" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30],o_fu_byp[8],o_fu_byp[10],o_gsw_switch[3]" outputs="o_fu_byp[9]" />
+                <connect name="o_fu_byp_10" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29],o_fu_byp[1],o_fu_byp[2],o_gsw_switch[4]" outputs="o_fu_byp[10]" />
+                <connect name="o_fu_byp_11" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31],o_fu_byp[0],o_fu_byp[4],o_gsw_switch[0]" outputs="o_fu_byp[11]" />
+                <connect name="o_fu_byp_12" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29],o_fu_byp[3],o_fu_byp[14],o_gsw_switch[14]" outputs="o_fu_byp[12]" />
+                <connect name="o_fu_byp_13" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31],o_fu_byp[9],o_fu_byp[12],o_gsw_switch[10]" outputs="o_fu_byp[13]" />
+                <connect name="o_fu_byp_14" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28],o_fu_byp[7],o_fu_byp[15],o_gsw_switch[13]" outputs="o_fu_byp[14]" />
+                <connect name="o_fu_byp_15" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30],o_fu_byp[11],o_fu_byp[13],o_gsw_switch[9]" outputs="o_fu_byp[15]" />
+
+
+                <connect name="i_gsw_0" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[0]" />
+                <connect name="i_gsw_1" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[1]" />
+                <connect name="i_gsw_2" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[2]" />
+                <connect name="i_gsw_3" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[3]" />
+                <connect name="i_gsw_4" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[4]" />
+                <connect name="i_gsw_5" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[5]" />
+                <connect name="i_gsw_6" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[6]" />
+                <connect name="i_gsw_7" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[7]" />
+                <connect name="i_gsw_8" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[8]" />
+                <connect name="i_gsw_9" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[9]" />
+                <connect name="i_gsw_10" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[10]" />
+                <connect name="i_gsw_11" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[11]" />
+                <connect name="i_gsw_12" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[12]" />
+                <connect name="i_gsw_13" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[13]" />
+                <connect name="i_gsw_14" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[14]" />
+                <connect name="i_gsw_15" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[15]" />
+                <connect name="i_gsw_16" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[16]" />
+                <connect name="i_gsw_17" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[17]" />
+                <connect name="i_gsw_18" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[18]" />
+                <connect name="i_gsw_19" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[19]" />
+                <connect name="i_gsw_20" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[20]" />
+                <connect name="i_gsw_21" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[21]" />
+                <connect name="i_gsw_22" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[22]" />
+                <connect name="i_gsw_23" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[23]" />
+                <connect name="i_gsw_24" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[24]" />
+                <connect name="i_gsw_25" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[25]" />
+                <connect name="i_gsw_26" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[26]" />
+                <connect name="i_gsw_27" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[27]" />
+                <connect name="i_gsw_28" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[28]" />
+                <connect name="i_gsw_29" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[29]" />
+                <connect name="i_gsw_30" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[30]" />
+                <connect name="i_gsw_31" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[31]" />
+                <connect name="i_gsw_32" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[32]" />
+                <connect name="i_gsw_33" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[33]" />
+                <connect name="i_gsw_34" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[34]" />
+                <connect name="i_gsw_35" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[35]" />
+                <connect name="i_gsw_36" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[36]" />
+                <connect name="i_gsw_37" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[37]" />
+                <connect name="i_gsw_38" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[38]" />
+                <connect name="i_gsw_39" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[39]" />
+                <connect name="i_gsw_40" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[40]" />
+                <connect name="i_gsw_41" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[41]" />
+                <connect name="i_gsw_42" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[42]" />
+                <connect name="i_gsw_43" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[43]" />
+                <connect name="i_gsw_44" inputs="i_gsw[3],i_gsw[7],i_gsw[11],i_gsw[15],i_gsw[19],i_gsw[23],i_gsw[27],i_gsw[31]" outputs="o_fu[44]" />
+                <connect name="i_gsw_45" inputs="i_gsw[2],i_gsw[6],i_gsw[10],i_gsw[14],i_gsw[18],i_gsw[22],i_gsw[26],i_gsw[30]" outputs="o_fu[45]" />
+                <connect name="i_gsw_46" inputs="i_gsw[1],i_gsw[5],i_gsw[9],i_gsw[13],i_gsw[17],i_gsw[21],i_gsw[25],i_gsw[29]" outputs="o_fu[46]" />
+                <connect name="i_gsw_47" inputs="i_gsw[0],i_gsw[4],i_gsw[8],i_gsw[12],i_gsw[16],i_gsw[20],i_gsw[24],i_gsw[28]" outputs="o_fu[47]" />
+
+				<!-- gsw to FUB: ctrl signals -->
+				<connect name="o_fu_ctrl_clk" inputs="i_gsw[7],i_gsw[15],i_gsw[23],i_gsw[31],i_gsw_clk[0],i_gsw_clk[1],i_gsw_clk[2],i_gsw_clk[3],i_gsw_clk[4],i_gsw_clk[5],i_gsw_clk[6],i_gsw_clk[7]" outputs="o_fu_ctrl[1:0]" />
+				<connect name="o_fu_ctrl_ce_sr" inputs="i_gsw[7],i_gsw[15],i_gsw[23],i_gsw[31],i_gsw_clk[0],i_gsw_clk[1],i_gsw_clk[2],i_gsw_clk[3],i_gsw_clk[4],i_gsw_clk[5],i_gsw_clk[6],i_gsw_clk[7],hfan[0],hfan[1]" outputs="o_fu_ctrl[7:2]" />
+				<connect name="o_fu_ctrl_we" inputs="i_gsw_clk[3],i_gsw_clk[2],i_gsw_clk[1],i_gsw_clk[0],i_gsw[1],i_gsw[9],i_gsw[17],i_gsw[25]" outputs="o_fu_ctrl[8]" />
+				<connect name="o_fu_ctrl_mclk" inputs="i_gsw_clk[3],i_gsw_clk[2],i_gsw_clk[1],i_gsw_clk[0],i_gsw[1],i_gsw[9],i_gsw[17],i_gsw[25]" outputs="o_fu_ctrl[9]" />
+
+				<!-- FUB to gsw-->
+                <connect name="o_gsw_switch_0" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[0]" />
+                <connect name="o_gsw_switch_1" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[1]" />
+                <connect name="o_gsw_switch_2" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[2]" />
+                <connect name="o_gsw_switch_3" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[3]" />
+                <connect name="o_gsw_switch_4" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[4]" />
+                <connect name="o_gsw_switch_5" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[5]" />
+                <connect name="o_gsw_switch_6" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[6]" />
+                <connect name="o_gsw_switch_7" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[7]" />
+                <connect name="o_gsw_switch_8" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[8]" />
+                <connect name="o_gsw_switch_9" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[9]" />
+                <connect name="o_gsw_switch_10" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[10]" />
+                <connect name="o_gsw_switch_11" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[11]" />
+                <connect name="o_gsw_switch_12" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[12]" />
+                <connect name="o_gsw_switch_13" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[13]" />
+                <connect name="o_gsw_switch_14" inputs="i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[8],i_fu[9],i_fu[10],i_fu[11],i_fu[16],i_fu[17],i_fu[18],i_fu[19],i_fu[20],i_fu[21],i_fu[22],i_fu[23]" outputs="o_gsw_switch[14]" />
+                <connect name="o_gsw_switch_15" inputs="i_fu[0],i_fu[1],i_fu[2],i_fu[3],i_fu[4],i_fu[5],i_fu[6],i_fu[7],i_fu[12],i_fu[13],i_fu[14],i_fu[15],i_fu[16],i_fu[17],i_fu[18],i_fu[19]" outputs="o_gsw_switch[15]" />
+
+
+				<direct name ="o_gsw_direct" input="i_fu" outputs="o_gsw_direct"/>
+				<direct name ="o_gsw_direct" input="i_fu" outputs="o_gsw_direct"/>
+			</interconnect>
+		</local_sw>
+	</tile>
+</tile_blocks>
+
+<core name="CORE_A">
+	<input name="i_east" width="2352"/>
+	<input name="i_north" width="2352"/>
+	<input name="i_west" width="2352"/>
+	<input name="i_south" width="2352"/>
+
+	<output name="o_east" width="2352"/>
+	<output name="o_north" width="2352"/>
+	<output name="o_west" width="2352"/>
+	<output name="o_south" width="2352"/>
+
+	<input name="clk" width="24" type="clock"/>
+
+	<clock_region>
+		<region start_x="0" end_x="49" start_y="0" end_y="49"/>
+		<region start_x="0" end_x="49" start_y="50" end_y="99"/>
+		<region start_x="50" end_x="99" start_y="0" end_y="49"/>
+		<region start_x="50" end_x="99" start_y="50" end_y="99"/>
+	</clock_region>
+
+	<grid type="CLOCK_GRID" width="100" height="100">
+	</grid>
+
+	<grid name="TILE_GRID" type="TILE" width="100" height="100">
+		<default type="FUAT" pri="0"/>	
+
+		<region name="east_io"  type="IO" start_x="99" end_x="99" start_y="1"  end_y="98" pri="100"/>
+		<region name="north_io" type="IO" start_x="1"  end_x="98" start_y="99" end_y="99" pri="100"/>
+		<region name="west_io"  type="IO" start_x="0"  end_x="0"  start_y="1"  end_y="98" pri="100"/>
+		<region name="south_io" type="IO" start_x="1"  end_x="98" start_y="0"  end_y="0"  pri="100"/>
+
+		<inst type="DUMMY" start_x="0"  end_x="0"  pri="200"/>
+		<inst type="DUMMY" start_x="99" end_x="99" pri="200"/>
+		<inst type="DUMMY" start_x="0"  end_x="0"  pri="200"/>
+		<inst type="DUMMY" start_x="99" end_x="99" pri="200"/>
+	</grid>
+
+	<interconnect name="int_conn_core">
+		<direct name="east_top_to_io" inputs="i_east" outputs="east_io.IN"/>
+		<direct name="east_io_to_top" inputs="east_io.OUT" outputs="o_east"/>
+		<direct name="north_top_to_io" inputs="i_north" outputs="north_io.IN"/>
+		<direct name="north_io_to_top" inputs="north_io.OUT" outputs="o_north"/>
+		<direct name="west_top_to_io" inputs="i_west" outputs="west_io.IN"/>
+		<direct name="west_io_to_top" inputs="west_io.OUT" outputs="o_west"/>
+		<direct name="south_top_to_io" inputs="i_south" outputs="south_io.IN"/>
+		<direct name="south_io_to_top" inputs="south_io.OUT" outputs="o_south"/>
+		
+	</interconnect>
+</core>
+
+<chip name="demo_chip">
+	<input name="i_east" width="2352"/>
+	<input name="i_north" width="2352"/>
+	<input name="i_west" width="2352"/>
+	<input name="i_south" width="2352"/>
+
+	<output name="o_east" width="2352"/>
+	<output name="o_north" width="2352"/>
+	<output name="o_west" width="2352"/>
+	<output name="o_south" width="2352"/>
+
+	<grid name="chip_grid" height="1" width="1">
+		<inst name="CORE_A0" type="CORE_A" x="0" y="0"/>
+	</grid>
+
+	<interconnect name="int_conn_chip">
+		<direct name="CORE_A0_south_to_top" inputs="CORE_A0.o_south" outputs="o_south"/>
+		<direct name="CORE_A0_north_to_top" inputs="CORE_A0.o_north" outputs="o_north"/>
+		<direct name="CORE_A0_east_to_top"  inputs="CORE_A0.o_east"  outputs="o_east"/>
+		<direct name="CORE_A0_west_to_top"  inputs="CORE_A0.o_west"  outputs="o_west"/>
+
+		<direct name="top_to_CORE_A0_south" inputs="i_south" outputs="CORE_A0.i_south"/>
+		<direct name="top_to_CORE_A0_north" inputs="i_north" outputs="CORE_A0.i_north"/>
+		<direct name="top_to_CORE_A0_east"  inputs="i_east"  outputs="CORE_A0.i_east" />
+		<direct name="top_to_CORE_A0_west"  inputs="i_west"  outputs="CORE_A0.i_west" />
+
+	</interconnect>
+</chip>
+</arch>
