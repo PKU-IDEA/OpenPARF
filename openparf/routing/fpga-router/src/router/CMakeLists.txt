@@ -1,0 +1,1 @@
+add_library(router path.cpp routegraph.cpp routegraphbuilder.cpp routetree.cpp pathfinder.cpp router.cpp pathfinderastar.cpp net.cpp)

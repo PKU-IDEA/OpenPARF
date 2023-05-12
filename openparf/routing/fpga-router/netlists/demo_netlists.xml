@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<netlist>
+<net name="demo_net0">
+    <source>
+
+    </source>
+    <sink>
+    </sink>
+    <guide>
+    </guide>
+    <core x="0" y="0"/>
+</net>
+</netlist>

@@ -1,0 +1,272 @@
+{
+    "aux_input": {
+      "description": "input .aux file",
+      "default": "",
+      "required": "required for Bookshelf"
+    },
+    "verilog_input": {
+      "description": "input VERILOG file, provide circuit netlist information if it is not included in DEF file",
+      "default": "",
+      "required": "optional for LEF/DEF"
+    },
+    "gpu": {
+      "description": "enable gpu or not",
+      "default": 0
+    },
+    "target_density": {
+      "description": "target density",
+      "default": 0.8
+    },
+    "random_seed": {
+      "description": "random seed",
+      "default": 1000
+    },
+    "result_dir": {
+      "description": "result directory for output",
+      "default": "results"
+    },
+    "global_place_flag": {
+      "description": "whether use global placement",
+      "default": 1
+    },
+    "legalize_flag": {
+      "description": "whether use internal legalization",
+      "default": 1
+    },
+    "detailed_place_flag": {
+      "description": "whether use internal detailed placement",
+      "default": 1
+    },
+    "stop_overflow": {
+      "description": "stopping criteria, consider stop when the overflow reaches to a ratio",
+      "default": 0.2
+    },
+    "dtype": {
+      "description": "data type, float32 | float64",
+      "default": "float32"
+    },
+    "plot_flag": {
+      "description": "whether plot solution or not",
+      "default": 0
+    },
+    "plot_iteration_frequency": {
+      "description": "number of iterations per plotting",
+      "default": 100
+    },
+    "plot_fence_region_flag":{
+      "description": "whether plot fence region solution or not",
+      "default": 0
+    },
+    "random_center_init_flag": {
+      "description": "whether perform random initialization around the center for global placement",
+      "default": 1
+    },
+    "num_threads": {
+      "description": "number of CPU threads",
+      "default": 8
+    },
+    "dump_global_place_solution_flag": {
+      "description": "whether dump intermediate global placement solution as a compressed pickle object",
+      "default": 0
+    },
+    "load_global_place_solution_file": {
+      "description": "global placement solution compressed pickle file to load",
+      "default": ""
+    },
+    "dump_legalize_solution_flag": {
+      "description": "whether dump intermediate legalization solution as a compressed pickle object",
+      "default": 0
+    },
+    "load_legalize_solution_file": {
+      "description": "legalization solution compressed pickle file to load",
+      "default": ""
+    },
+    "max_global_place_iters": {
+      "description": "maximum iterations to the most outside loop in global placement",
+      "default": 1000
+    },
+    "lambda_iters": {
+      "description": "maximum iterations to lambda (density weight)",
+      "default": 1
+    },
+    "gamma_iters": {
+      "description": "maximum iterations to gamma",
+      "default": 1
+    },
+    "sub_iters": {
+      "description": "maximum iterations to update subproblem",
+      "default": 1
+    },
+    "wirelength_weights": {
+      "description": "wirelength weights in x and y directions",
+      "default": [
+        0.7,
+        1.2
+      ]
+    },
+    "base_gamma": {
+      "description": "initial gamma for wirelength cost computation in bin half-perimeter",
+      "default": 5.0
+    },
+    "lambda_alpha_low": {
+      "description": "Lower bound to update tk in lambda",
+      "default": 1.05
+    },
+    "lambda_alpha_high": {
+      "description": "Upper bound to update tk in lambda",
+      "default": 1.06
+    },
+    "lambda_beta": {
+      "description": "Coefficient to compute augmented Lagrangian multiplier in lambda",
+      "default": 1e3
+    },
+    "lambda_eta": {
+      "description": "Coefficient to compute initial lambda",
+      "default": 8e-5
+    },
+    "ssr_stop_overflow": {
+      "description": "stopping overflow for single-site resources to perform lookahead legalization",
+      "default": 0.2
+    },
+    "ssr_legalize_lock_iters": {
+      "description": "Iterations of lock instances after legalizing single-site resources",
+      "default": 5
+    },
+    "gp_model2area_types_map": {
+      "description": "Map model to area types with sizes",
+      "default": {}
+    },
+    "gp_resource2area_types_map": {
+      "description": "Map resource to area types",
+      "default": {}
+    },
+    "resource_categories": {
+      "description": "Map resource to resource category",
+      "default": {}
+    },
+    "CLB_capacity": {
+      "description": "number of LUT/FF pairs in a configurable logic block (CLB)",
+      "default": 16
+    },
+    "BLE_capacity": {
+      "description": "number of LUT/FF pairs in a basic logic block (BLE)",
+      "default": 2
+    },
+    "num_ControlSets_per_CLB": {
+      "description": "number of Clock/ControlSetSR/ControlSetCE tuples in a CLB",
+      "default": 2
+    },
+    "gp_adjust_area": {
+      "description": "Whether to adjust instance area during gp. Adjust strategies consist of routing utilization and pin utilization.",
+      "default": 0
+    },
+    "gp_max_adjust_area_iters": {
+      "description": "Maximum number of adjustances",
+      "default": 6
+    },
+    "gp_adjust_area_overflow_threshold": {
+      "description": "The overflow threshold of running area adjustment. When the overflow is above this rate, the optimization will be allowed to continue",
+      "default": 0.15
+    },
+    "gp_adjust_area_scaling_hyper_parameter": {
+      "description": "heuristic parameter for scaling increasing movable area.",
+      "default": 0.1
+    },
+    "gp_adjust_area_stop_ratio": {
+      "description": "When area increase is smaller than this, disable all adjustment of instance areas",
+      "default": 0.01
+    },
+    "gp_adjust_route_area": {
+      "description": "Boolean switch, whether to performs a RISA/RUDY based routing congestion estimation",
+      "default": 1
+    },
+    "gp_adjust_route_area_stop_ratio": {
+      "description": "When area increase is smaller than this, disable adjustment based on routing congestion.",
+      "default": 0.01
+    },
+    "gp_adjust_area_route_opt_adjust_exponent": {
+      "description": "exponent to adjust the routing utilization map",
+      "default": 2.0
+    },
+    "gp_adjust_area_max_route_opt_adjust_rate": {
+      "description": "the maximum instance area adjustment rate for routability optimization",
+      "default": 2.0
+    },
+    "gp_adjust_pin_area": {
+      "description": "Boolean switch, whether to adjust based on pin utilization estimation",
+      "default": 1
+    },
+    "gp_adjust_pin_area_stop_ratio": {
+      "description": "When area increase is smaller than this, disable adjustment based on pin utilization.",
+      "default": 0.05
+    },
+    "gp_adjust_area_max_pin_opt_adjust_rate": {
+      "description": "the maximum instance area adjustment rate for pin density optimization",
+      "default": 1.6
+    },
+    "gp_adjust_resource_area": {
+      "description": "Boolean switch, whether to adjust based on resource utilization estimation",
+      "default": 1
+    },
+    "gp_adjust_resource_area_stop_ratio": {
+      "description": "When area increase is smaller than this, disable adjustment based on resource utilization.",
+      "default": 0.01
+    },
+    "routing_bin_size_x": {
+      "description": "the width of bin in the x-axis direction in routing utilization map",
+      "default": 1.0
+    },
+    "routing_bin_size_y": {
+      "description": "the height of bin in the y-axis direction in routing utilization map",
+      "default": 1.0
+    },
+    "unit_horizontal_routing_capacity": {
+      "description": "number of horizontal routing tracks per unit distance",
+      "default": 209.0
+    },
+    "unit_vertical_routing_capacity": {
+      "description": "number of vertical routing tracks per unit distance",
+      "default": 239.0
+    },
+    "pin_bin_size_x": {
+      "description": "the width of bin in the x-axis direction in pin utilization map",
+      "default": 1.0
+    },
+    "pin_bin_size_y": {
+      "description": "the height of bin in the y-axis direction in pin utilization map",
+      "default": 1.0
+    },
+    "ff_pin_weight": {
+      "description": "The weight of FF pins for pin density optimization",
+      "default": 3.0
+    },
+    "unit_pin_capacity": {
+      "description": "number of pins per unit area",
+      "default": 50.0
+    },
+    "pin_stretch_ratio": {
+      "description": "pin stretch ratio",
+      "default": 1.414213562
+    },
+    "gp_inst_dem_stddev_trunc": {
+      "description": "We truncate Gaussian distribution outside the inst_dem_stddev_trunc * inst_dem_stddev",
+      "default": 2.5
+    },
+    "reset_lambda_param": {
+      "description": "Weighting parameter to reset lambda. For more info, see Equation(27) in elfPlace paper.",
+      "default": 0.1
+    },
+    "confine_fence_region_max_iters": {
+      "description": "Maximum number of fence region confinements",
+      "default": 1
+    },
+    "confine_fence_region_overflow_threshold": {
+      "description": "The overflow threshold of confining fence regions. When the overflow is above this rate, the optimization will be allowed to continue",
+      "default": 0.2
+    },
+    "confine_fence_region_weighting_param": {
+      "description": "Weighting parameter of fence region cost in overall loss function",
+      "default": 10
+    }
+  }
+  

@@ -1,0 +1,5 @@
+install(DIRECTORY ispd2016 DESTINATION unittest/regression)
+install(DIRECTORY ispd2017 DESTINATION unittest/regression)
+install(DIRECTORY bookshelf DESTINATION unittest/regression)
+install(DIRECTORY ispd2016_flexshelf DESTINATION unittest/regression)
+install(DIRECTORY ispd2017_flexshelf DESTINATION unittest/regression)

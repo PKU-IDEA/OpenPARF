@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<netlist>
+	<net source="demo_chip.CORE_A0.south_io[27][0].gsw[0].i_lsw_direct[24]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.default[27][2].FUA[0].BLE[5].LUT[0].in[5]" />
+		<sink pin="demo_chip.CORE_A0.default[27][7].o_wl2[4]" />
+		<sink pin="demo_chip.CORE_A0.south_io[27][0].o_sl1[4]" />
+		<guide start_x="27" end_x="27" start_y="0" end_y="7" />
+	</net>
+	<net source="demo_chip.CORE_A0.south_io[92][0].lsw[0].o_fu_ctrl[3]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.south_io[92][0].outpad[22].SR[0]" />
+		<sink pin="demo_chip.CORE_A0.south_io[92][0].outpad[11].SR[0]" />
+		<sink pin="demo_chip.CORE_A0.south_io[92][0].outpad[8].SR[0]" />
+		<guide start_x="92" end_x="92" start_y="0" end_y="0" />
+	</net>
+	<net source="demo_chip.CORE_A0.south_io[93][0].gsw[0].i_el6[7]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.south_io[93][0].gsw[0].o_lsw[79]" />
+		<sink pin="demo_chip.CORE_A0.default[93][1].o_el2[7]" />
+		<sink pin="demo_chip.CORE_A0.south_io[93][0].o_nl2[7]" />
+		<guide start_x="93" end_x="93" start_y="0" end_y="1" />
+	</net>
+	<net source="demo_chip.CORE_A0.west_io[0][86].gsw[0].i_wl6[7]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.default[1][86].FUA[0].BLE[2].LUT[0].in[5]" />
+		<sink pin="demo_chip.CORE_A0.west_io[0][86].o_sl2[7]" />
+		<sink pin="demo_chip.CORE_A0.west_io[0][86].gsw[0].o_el1[7]" />
+		<guide start_x="0" end_x="1" start_y="86" end_y="86" />
+	</net>
+	<net source="demo_chip.CORE_A0.south_io[7][0].lsw[0].i_gsw_clk[6]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.south_io[7][0].inpad[15].CE[0]" />
+		<sink pin="demo_chip.CORE_A0.south_io[7][0].outpad[12].CE[0]" />
+		<sink pin="demo_chip.CORE_A0.south_io[7][0].outpad[22].SR[0]" />
+		<guide start_x="7" end_x="7" start_y="0" end_y="0" />
+	</net>
+	<net source="demo_chip.CORE_A0.south_io[2][0].gsw[0].i_sl2[5]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.south_io[2][0].o_wl2[5]" />
+		<sink pin="demo_chip.CORE_A0.default[2][2].FUA[0].BLE[2].LUT[0].in[2]" />
+		<sink pin="demo_chip.CORE_A0.default[6][1].o_wl2[5]" />
+		<guide start_x="2" end_x="6" start_y="0" end_y="2" />
+	</net>
+	<net source="demo_chip.CORE_A0.west_io[0][67].gsw[0].i_wl2[1]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.west_io[0][67].o_el6[1]" />
+		<sink pin="demo_chip.CORE_A0.west_io[0][67].o_sl1[1]" />
+		<guide start_x="0" end_x="0" start_y="67" end_y="67" />
+	</net>
+	<net source="demo_chip.CORE_A0.south_io[27][0].gsw[0].i_nl2[4]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.south_io[35][0].o_el6[4]" />
+		<sink pin="demo_chip.CORE_A0.default[21][1].lsw[0].o_fu[37]" />
+		<sink pin="demo_chip.CORE_A0.south_io[27][0].o_sl6[4]" />
+		<guide start_x="21" end_x="35" start_y="0" end_y="1" />
+	</net>
+	<net source="demo_chip.CORE_A0.south_io[73][0].gsw[0].i_lsw_direct[21]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.default[77][4].o_el2[2]" />
+		<sink pin="demo_chip.CORE_A0.default[75][1].o_nl6[2]" />
+		<sink pin="demo_chip.CORE_A0.south_io[73][0].o_sl6[2]" />
+		<guide start_x="73" end_x="77" start_y="0" end_y="4" />
+	</net>
+	<net source="demo_chip.CORE_A0.south_io[93][0].gsw[0].i_el6[4]" result="Unrouted">
+		<sink pin="demo_chip.CORE_A0.south_io[93][0].gsw[0].o_lsw[76]" />
+		<sink pin="demo_chip.CORE_A0.default[93][1].o_nl2[4]" />
+		<sink pin="demo_chip.CORE_A0.default[91][6].o_wl1[4]" />
+		<guide start_x="91" end_x="93" start_y="0" end_y="6" />
+	</net>
+</netlist>

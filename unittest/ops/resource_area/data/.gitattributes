@@ -1,0 +1,8 @@
+lut_type_array filter=lfs diff=lfs merge=lfs -text
+pl filter=lfs diff=lfs merge=lfs -text
+ff_area_map filter=lfs diff=lfs merge=lfs -text
+ff_ctrlsets filter=lfs diff=lfs merge=lfs -text
+ff_demand_map filter=lfs diff=lfs merge=lfs -text
+inst_area filter=lfs diff=lfs merge=lfs -text
+lut_area_map filter=lfs diff=lfs merge=lfs -text
+lut_demand_map filter=lfs diff=lfs merge=lfs -text

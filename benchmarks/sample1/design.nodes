@@ -1,0 +1,12 @@
+BRAM_ConfigSDP_inst0_inst_b/my_sdpram RAMB36E2
+BUFG_inst0 BUFGCE
+DSP_ConfigDSP_inst2_inst_b/my_dsp DSP48E2
+FDRE_inst_b FDRE
+IBUF_inst0 IBUF
+LUT2_LUT2__config_inst4_inst_b LUT2
+LUT3_LUT3__config_inst5_inst_b LUT3
+LUT4_LUT4__config_inst6_inst_b LUT4
+LUT5_LUT5__config_inst7_inst_b LUT5
+LUT6_LUT6__config_inst8_inst_bb LUT6
+OBUF_inst25 OBUF
+clk10_IBUF_inst IBUF

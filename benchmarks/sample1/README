@@ -1,0 +1,102 @@
+=======================================================================================
+@Copyright 2016 ~ 2017 Xilinx, Inc. All rights reserved. 
+
+This file contains confidential and proprietary information of Xilinx, Inc. and is protected under U.S. and 
+international copyright and other intellectual property laws. 
+
+DISCLAIMER This disclaimer is not a license and does not grant any rights to the materials distributed 
+herewith. Except as otherwise provided in a valid license issued to you by Xilinx, and to the maximum 
+extent permitted by applicable law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND WITH ALL 
+FAULTS, AND XILINX HEREBY DISCLAIMS ALL WARRANTIES AND CONDITIONS, EXPRESS, IMPLIED, OR 
+STATUTORY, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
+INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and (2) Xilinx shall not be liable (whether 
+in contract or tort, including negligence, or under any other theory of liability) for any loss or damage of 
+any kind or nature related to, arising under or in connection with these materials, including for any 
+direct, or any indirect, special, incidental, or consequential loss or damage (including loss of data, profits, 
+goodwill, or any type of loss or damage suffered as a result of any action brought by a third party) even 
+if such damage or loss was reasonably foreseeable or Xilinx had been advised of the possibility of the 
+same. 
+
+CRITICAL APPLICATIONS 
+Xilinx products are not designed or intended to be fail-safe, or for use in any application requiring fail-
+safe performance, such as life-support or safety devices or systems, Class III medical devices, nuclear 
+facilities, applications related to the deployment of airbags, or any other applications that could lead to 
+death, personal injury, or severe property or environmental damage (individually and collectively, 
+"Critical Applications"). Customer assumes the sole risk and liability of any use of Xilinx products in 
+Critical Applications, subject only to applicable laws and regulations governing limitations on product 
+liability. 
+
+THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS PART OF THIS FILE AT ALL TIMES. 
+
+=======================================================================================
+                     Bookshelf Format for FPGA Placement
+=======================================================================================
+
+This document explains the differences (new features) of FPGA placement bookshelf format.
+
+1. Library cell (.lib file):
+  - Each instance has a corresponding master library cell. It is defined in nodes file;
+  - All library cells are defined in design.lib, a new addition to bookshelf format;
+
+2. PIN:
+  - All pins are defined in library file (.lib) cell section;
+  - Each instance has the same number of pins as defined in its master cell;
+  - Not all the pins of an instance are used. Some are left unconnected;
+  - Library file defines certain attributes associated with pins: direction, clock, and control;
+  - Each net is a collection of pins, as specified in nets file;
+
+3. Layout file (.scl file)
+  - Layout file is re-defined to accomodate FPGA placement;
+  - There are two section in layout file: site definition section and site map section;
+  - SITE definition speicifies available resources (LUT/FF/RAMB/DSP) that can be placed in one site;
+  - RESOURCES specifies cell names that correspond to certain resource;
+  - SITEMAP specifies the two-dimension array of sites for the entire device/chip:
+  - CLOCKREGIONS defines bounding box and half columns for each region:
+    <region_name> <x1> <y1> <x2> <y2> <half-col-div-row> <half-col-start-col> 
+	  <x1> <y1> <x2> <y2>: bounding box of the clock region;
+	  <half-col-div-row>:  row number that divides the upper and lower half column regions. It belongs to upper region;
+	  <half-col-start-col>: where the left-most half column starts. Each half column consists of two columns.
+    Example: CLOCKREGION X3Y0 : 103   0 139  59  30 104
+	Upper half column regions are: (104,30,105,59), (106,30,107,59), (108,30,109,59), ...
+	Lower half column regions are: (104, 0,105,29), (106, 0,107,29), (108, 0,109,29), ...
+
+4. Placement file (.pl file)
+  - The location of an instance has three fields: x-coord, y-coord (to determine the SITE) and BEL (index within the SITE);
+  - In released benchmarks, placement file only contains locations of fixed instances (IBUF/OBUF/BUFGCE etc);
+    These instances' locations, including BEL numbers, are not allowed to change during placement;
+  - Placer's output placement file should contain locations of all instances;
+  - The following diagram shows the BEL number for LUTs/FFs placed inside a SLICE SITE:
+      ==========================
+      |   LUT 15   |   FF 15   |  
+      --------------------------
+      |   LUT 14   |   FF 14   |  
+      --------------------------
+      |   LUT 13   |   FF 13   |  
+      --------------------------
+      |   LUT 12   |   FF 12   |  
+      --------------------------
+      |   LUT 11   |   FF 11   |  
+      --------------------------
+      |   LUT 10   |   FF 10   |  
+      --------------------------
+      |   LUT  9   |   FF  9   |  
+      --------------------------
+      |   LUT  8   |   FF  8   |  
+      --------------------------
+      |   LUT  7   |   FF  7   |  
+      --------------------------
+      |   LUT  6   |   FF  6   |  
+      --------------------------
+      |   LUT  5   |   FF  5   |  
+      --------------------------
+      |   LUT  4   |   FF  4   |  
+      --------------------------
+      |   LUT  3   |   FF  3   |  
+      --------------------------
+      |   LUT  2   |   FF  2   |  
+      --------------------------
+      |   LUT  1   |   FF  1   |  
+      --------------------------
+      |   LUT  0   |   FF  0   |  
+      ==========================
+
