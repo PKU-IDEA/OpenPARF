@@ -13,6 +13,7 @@
     - [From Source](#from-source)
       - [Prerequisites](#prerequisites)
       - [Install Dependencies](#install-dependencies)
+      - [Install Gurobi](#install-gurobi)
       - [Get the OpenPARF Source](#get-the-openparf-source)
       - [Install OpenPARF](#install-openparf)
       - [Adjust Build Options (Optional)](#adjust-build-options-optional)
@@ -86,7 +87,7 @@ If you are installing from source, you will need:
 - Python 3.7 or above
 - C++ compiler with C++14 support, recommended to use GCC 7.5. Other version may also work, but have not been tested.
 - PyTorch 1.7.1. Other version may also work, but have not been tested. Please refer to the [next section](#install-dependencies) to install PyTorch through conda environment.
-- Gurobi 9.5, other version may also work, but have not been tested. Please make sure to obtain a valid license and follow the installation instructions provided on the Gurobi website.
+- Gurobi 9.5, other version may also work, but have not been tested. Please make sure to obtain a valid license and follow the installation instructions provided on the Gurobi website. Please refer to the [next section](#install-gurobi) to install Gurobi.
 - NVIDIA CUDA 11.0 (optional, if compiled with CUDA support). Other versions may also work, but have not been tested. If CUDA is found, the project can run on the GPU implementation, otherwise it will only run on the CPU implementation.
 
 #### Install Dependencies
@@ -106,6 +107,25 @@ conda install pytorch==1.7.1 torchvision==0.8.2 cudatoolkit=11.0 -c pytorch
 
 # * python packages
 pip install hummingbird-ml pyyaml
+```
+
+#### Install Gurobi
+
+Permit me to illuminate the exquisite process of installing Gurobi, using the recommended Gurobi 9.5.1 as a quintessential example:
+
+1. Download the [gurobi9.5.1_linux64.tar.gz](https://packages.gurobi.com/9.5/gurobi9.5.1_linux64.tar.gz), and then extract it to a location of your choosing, aptly referred to as `<your Gurobi home>`.
+2. Next, you must obtain a license for Gurobi. To do so, you must first create an account on the Gurobi website. Once you have created an account, you will be able to request an license. Once you receive your license, you will be able to download it from the Gurobi website. The license will be a file with the extension `.lic`. Save this file to a location of your choosing, aptly referred to as `<your Gurobi license path>`.
+3. Finally, you must set the following environment variables. You can do so by adding the following lines to your `~/.bashrc` file.
+
+```bash
+export GUROBI_HOME="<your Gurobi home>/linux64"
+# For example,
+# export GUROBI_HOME="/home/jingmai/softwares/gurobi951/linux64"
+export GRB_LICENSE_FILE="<your Gurobi license path>"
+# For example,
+# export GRB_LICENSE_FILE="/home/jingmai/licenses/gurobi.lic"
+export PATH="${PATH}:${GUROBI_HOME}/bin"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
 ```
 
 #### Get the OpenPARF Source
