@@ -9,17 +9,24 @@
     - [A Multi-Electrostatic-based FPGA P\&R Framework](#a-multi-electrostatic-based-fpga-pr-framework)
     - [Reference Flow](#reference-flow)
     - [Demo](#demo)
-  - [Installation](#installation)
-    - [From Source](#from-source)
-      - [Prerequisites](#prerequisites)
+  - [Prerequisites](#prerequisites)
+    - [Build from Source](#build-from-source)
       - [Install Dependencies](#install-dependencies)
-      - [Install Gurobi](#install-gurobi)
-      - [Get the OpenPARF Source](#get-the-openparf-source)
-      - [Install OpenPARF](#install-openparf)
-      - [Adjust Build Options (Optional)](#adjust-build-options-optional)
+      - [Install Gurobi (Optional)](#install-gurobi-optional)
+    - [Build with Docker](#build-with-docker)
+      - [Docker Image](#docker-image)
+        - [Using pre-built images](#using-pre-built-images)
+        - [Building the image yourself](#building-the-image-yourself)
+      - [Running the Docker Image](#running-the-docker-image)
+      - [Entering the Docker Container](#entering-the-docker-container)
+  - [Build and Install OpenPARF](#build-and-install-openparf)
+    - [Get the OpenPARF Source](#get-the-openparf-source)
+    - [Install OpenPARF](#install-openparf)
+    - [Adjust Build Options (Optional)](#adjust-build-options-optional)
   - [Getting Started](#getting-started)
     - [ISPD 2016/2017 Benchmarks](#ispd-20162017-benchmarks)
       - [Obtaining Benchmarks](#obtaining-benchmarks)
+      - [Linking Benchmarks](#linking-benchmarks)
       - [Running the Benchmarks](#running-the-benchmarks)
       - [Adjust Benchmark Options (Optional)](#adjust-benchmark-options-optional)
       - [More Advanced Usages](#more-advanced-usages)
@@ -76,19 +83,23 @@ The following are the visualization for electrostatic fields in benchmark `ISPD2
 | :---------------------------: | :-------------------------: | :---------------------------: | :-----------------------------: |
 | ![LUT](README.assets/lut.gif) | ![ff](README.assets/ff.gif) | ![dsp](README.assets/dsp.gif) | ![BRAM](README.assets/bram.gif) |
 
-## Installation
+## Prerequisites
 
-### From Source
+OpenPARF is written in C++ and Python. The following are the prerequisites for building OpenPARF.
 
-#### Prerequisites
+- Python 3.7 or above.
+- C++ compiler with **C++14** support, recommended to use GCC 7.5. Other version may also work, but have not been tested.
+- **PyTorch 1.7.1**. Other version may also work, but have not been tested. Please refer to the [next section](#install-dependencies) to install PyTorch through conda environment.
+- **Gurobi 9.5** (optional, if the router is compiled). Other version may also work, but have not been tested. Please make sure to obtain a valid license and follow the installation instructions provided on the Gurobi website.
+  Note that only the router uses gurobi in OpenPARF. If you do not need a router, you can leave gurobi uninstalled and set `ENABL_ROUTER` to `OFF` when compiling OpenPARF.
+- **NVIDIA CUDA 11.0** (optional, if compiled with CUDA support). Other versions may also work, but have not been tested. If CUDA is found, the project can run on the GPU implementation, otherwise it will only run on the CPU implementation.
 
-If you are installing from source, you will need:
+We have provided two ways to build OpenPARF,
 
-- Python 3.7 or above
-- C++ compiler with C++14 support, recommended to use GCC 7.5. Other version may also work, but have not been tested.
-- PyTorch 1.7.1. Other version may also work, but have not been tested. Please refer to the [next section](#install-dependencies) to install PyTorch through conda environment.
-- Gurobi 9.5, other version may also work, but have not been tested. Please make sure to obtain a valid license and follow the installation instructions provided on the Gurobi website. Please refer to the [next section](#install-gurobi) to install Gurobi.
-- NVIDIA CUDA 11.0 (optional, if compiled with CUDA support). Other versions may also work, but have not been tested. If CUDA is found, the project can run on the GPU implementation, otherwise it will only run on the CPU implementation.
+- one is to [build from source](#build-from-source),
+- and the other is to [build with docker](#build-with-docker).
+
+### Build from Source
 
 #### Install Dependencies
 
@@ -96,20 +107,20 @@ We highly recommend installing an [Anaconda](https://www.anaconda.com/data-scien
 
 ```bash
 # * create and activate conda environment
-conda create --name openparf python=3.7
-conda activate openparf
+mamba create --name openparf python=3.7
+mamba activate openparf
 
 # * common packages
-conda install cmake boost bison
+mamba install cmake boost bison
 
 # * Pytorch 1.7.1. Other version may also work, but have not been tested.
-conda install pytorch==1.7.1 torchvision==0.8.2 cudatoolkit=11.0 -c pytorch
+mamba install pytorch==1.7.1 torchvision==0.8.2 cudatoolkit=11.0 -c pytorch
 
 # * python packages
 pip install hummingbird-ml pyyaml
 ```
 
-#### Install Gurobi
+#### Install Gurobi (Optional)
 
 Permit me to illuminate the exquisite process of installing Gurobi, using the recommended Gurobi 9.5.1 as a quintessential example:
 
@@ -128,13 +139,92 @@ export PATH="${PATH}:${GUROBI_HOME}/bin"
 export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${GUROBI_HOME}/lib"
 ```
 
-#### Get the OpenPARF Source
+Now, please go to the [Build and Install OpenPARF](#build-and-install-openparf) section to build and install OpenPARF.
+
+### Build with Docker
+
+#### Docker Image
+
+##### Using pre-built images
+
+You can also pull a pre-built docker image from Docker Hub.
+
+```bash
+docker pull magic3007/openparf:1.0
+```
+
+##### Building the image yourself
+
+You can also build the docker image yourself. The dockerfile is located in `docker/openparf.dockerfile`. To build the image, run the following command:
+
+```bash
+cd <source directory>/docker
+docker build . -t openparf:1.0 -f openparf.dockerfile
+```
+
+#### Running the Docker Image
+
+We recommend that you have the following three directories/files on your host before running docker:
+
+1. `<source directory on host>`: The directory where you store the OpenPARF source code on host. See [Get the OpenPARF Source](#get-the-openparf-source) for more details.
+2. `<benchmark directory on host>`: The directory where you store the ISPD 2016/2017 benchmarks on host. See [Obtaining Benchmarks](#obtaining-benchmarks) for more details.
+
+**Without CUDA Support**
+To run the docker image without CUDA support, run the following command:
+
+```bash
+docker run -itd --restart=always --network host -e TERM=$TERM \
+  --name openparf \
+  -v /etc/localtime:/etc/localtime:ro \
+  -v <project directory on host>:/root/OpenPARF \
+  -v <benchmark directory on host>:/root/benchmarks \
+  openparf:1.0 \
+  /bin/bash;
+```
+
+**With CUDA Support**
+To run the docker image with CUDA support, run the following command:
+
+```bash
+docker run -itd --restart=always --network host -e TERM=$TERM \
+  --name openparf \
+  --gpus all \
+  -v /etc/localtime:/etc/localtime:ro \
+  -v <project directory on host>:/root/OpenPARF \
+  -v <benchmark directory on host>:/root/benchmarks \
+  openparf:1.0 \
+  /bin/bash;
+```
+
+#### Entering the Docker Container
+
+Once the docker image is running, you can enter the docker container by running the following command:
+
+```bash
+docker exec -it openparf /bin/bash
+```
+
+Within the docker container:
+
+- the OpenPARF source code will be located in `/root/OpenPARF`.
+- the ISPD 2016/2017 benchmarks will be located in `/root/benchmarks`.
+
+**NOTE** that though we have gurobi 9.5.1 installed in docker (located in `/opt/gurobi`), due to permission reasons, if you need router, you still need to get gurobi license and place it as `/root/gurobi.lic`.
+
+Now, please go to the [Build and Install OpenPARF](#build-and-install-openparf) section to build and install OpenPARF.
+
+## Build and Install OpenPARF
+
+### Get the OpenPARF Source
 
 ```bash
 git clone --recursive https://github.com/PKU-IDEA/OpenPARF.git
 ```
 
-#### Install OpenPARF
+If you have already clone the repository, e.g., the repository is mounted in the docker container,
+you can skip this step.
+
+### Install OpenPARF
 
 Assuming that OpenAPRF is a subfolder in the current directory, i.e., `./OpenPARF` is the path to the OpenPARF source code.
 
@@ -148,13 +238,14 @@ make install
 
 Where `<installation directory>` is the directory where you want to install OpenPARF (e.g., `../install`).
 
-#### Adjust Build Options (Optional)
+### Adjust Build Options (Optional)
 
 You can adjust the configuration of cmake variables optionally (without buiding first), by doing the following.
 
 - `CMAKE_INSTALL_PREFIX`: The directory where you want to install OpenPARF (e.g., `../install`).
 - `CMAKE_BUILD_TYPE`: The build type, can be `Release` or `Debug`. Default is `Release`.
 - `USE_CCACHE`: Whether to use ccache to speed up compilation. Default is `OFF`.
+- `ENABLE_ROUTER`: Whether to compile the router. Default is `ON`. If you do not need a router, you can set it to `OFF`.
 
 ## Getting Started
 
@@ -183,12 +274,21 @@ To obtain the benchmarks, you can download the benchmark zip files from the prov
 >
 > </details>
 
-Once the files have downloaded, extract their contents to the `<installation directory>/benchmarks` folder. You should then have two new directories, one for ISPD 2016 and another for ISPD 2017. Remember to keep these benchmark directories separate as OpenPARF supports ISPD2016 and ISPD2017 benchmarks.
+Once the files have downloaded, extract their contents to the `<benchmark directory>` folder. Under this directory, you should then have two new directories, one for ISPD 2016 and another for ISPD 2017. Remember to keep these benchmark directories separate as OpenPARF supports ISPD2016 and ISPD2017 benchmarks.
 
 ```bash
-<installation directory>/benchmarks
+<benchmark directory>
 ├── ispd2016
 ├── ispd2017
+```
+
+#### Linking Benchmarks
+
+Link ispd2016 and ispd2017 folders under `<installation directory>/benchmarks` by soft link.
+
+```bash
+ln -s <benchmark directory>/ispd2016 <installation directory>/benchmarks/ispd2016
+ln -s <benchmark directory>/ispd2017 <installation directory>/benchmarks/ispd2017
 ```
 
 #### Running the Benchmarks
@@ -218,7 +318,7 @@ Common modifiable parameters include
 
 - `gpu`: Enable GPU acceleration or not. Default is 0.
 - `result_dir`: Specify the directory to save P&R results.
-- `route_flag`: Enable routing or not. Default is 0.
+- `route_flag`: Enable router or not. Default is 0.
 
 For more detailed information on parameters, please see the `description` field in `openparf/params.json`.
 
@@ -232,10 +332,8 @@ We also provide scripts to run ISPD2016 and ISPD2017 in batches. Navigate to the
 
 ```bash
 cd <installation directory>
-# ispd 2016
-<source directory>/scripts/run_ispd2016_benchmark.sh
-# ispd 2017
-<source directory>/scripts/run_ispd2017_benchmark.sh
+<source directory>/scripts/run_ispd2016_benchmark.sh # ispd 2016
+<source directory>/scripts/run_ispd2017_benchmark.sh # ispd 2017
 ```
 
 The results can be found in `<installation directory>/../ispd2016_log` and `<installation directory>/../ispd2017_log`, respectively. Please refer to the script for specific configurations.
@@ -246,7 +344,7 @@ If you are looking to evaluate a placement algorithm, you can do so directly wit
 
 When you import the OpenPARF placement result file into Vivado, it will be located in `<result dir>/<benchmark name>.pl` (e.g., `results/FPGA01/FPGA01.pl`). Keep in mind that the `<result dir>` and `<benchmark name>` are parameters set within the JSON configuration.
 
-NOTE that if you want the evaluate the placement via Vivado, you can disable the routing stage in OpenPARF by simply setting the `route_flag` to 0 before running the tool.
+**NOTE** that if you want the evaluate the placement via Vivado, you can disable the routing stage in OpenPARF by simply setting the `route_flag` to 0 before running the tool.
 
 ## Resources
 
@@ -277,26 +375,26 @@ OpenPARF is maintained by [PKU-IDEA Lab](https://github.com/PKU-IDEA) at Peking 
 
 ```bibtex
 @inproceedings{PLACE_ASICON23_Mai_OpenPARF,
-  title       = {OpenPARF: An Open-Source Placement and Routing Framework for Large-Scale Heterogeneous FPGAs with Deep Learning Toolkit},
-  author      = {Jing Mai and Jiarui Wang and Zhixiong Di and Guojie Luo and Yun Liang and Yibo Lin},
-  booktitle   = {International Conference on ASIC (ASICON)}
-  year        = {2023},
+  title         = {OpenPARF: An Open-Source Placement and Routing Framework for Large-Scale Heterogeneous FPGAs with Deep Learning Toolkit},
+  author        = {Jing Mai and Jiarui Wang and Zhixiong Di and Guojie Luo and Yun Liang and Yibo Lin},
+  booktitle     = {International Conference on ASIC (ASICON)}
+  year          = {2023},
 }
 
 @inproceedings{PLACE_DAC22_Mai,
-  title        = {Multi-electrostatic {FPGA} placement considering {SLICEL-SLICEM} heterogeneity and clock feasibility},
-  author       = {Jing Mai and Yibai Meng and Zhixiong Di and Yibo Lin},
-  booktitle    = {ACM/IEEE Design Automation Conference (DAC)},
-  pages        = {649--654},
-  year         = {2022},
+  title         = {Multi-electrostatic {FPGA} placement considering {SLICEL-SLICEM} heterogeneity and clock feasibility},
+  author        = {Jing Mai and Yibai Meng and Zhixiong Di and Yibo Lin},
+  booktitle     = {ACM/IEEE Design Automation Conference (DAC)},
+  pages         = {649--654},
+  year          = {2022},
 }
 
 @inproceedings{ROUTE_ASPDAC2023_Wang,
-  title     = {{{A Robust FPGA Router with Concurrent Intra-CLB Rerouting}}},
-  author    = {Jiarui Wang and Jing Mai and Zhixiong Di and Yibo Lin},
-  booktitle = {IEEE/ACM Asia and South Pacific Design Automation Conference (ASPDAC)},
-  pages     = {529--534},
-  year      = {2023}
+  title         = {{{A Robust FPGA Router with Concurrent Intra-CLB Rerouting}}},
+  author        = {Jiarui Wang and Jing Mai and Zhixiong Di and Yibo Lin},
+  booktitle     = {IEEE/ACM Asia and South Pacific Design Automation Conference (ASPDAC)},
+  pages         = {529--534},
+  year          = {2023}
 }
 ```
 
