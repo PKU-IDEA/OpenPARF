@@ -5,7 +5,7 @@
 # @created date  : March 30 2023, 21:39:53, Thursday
 # @brief         :
 # -----
-# Last Modified: May 05 2023, 17:23:42, Friday
+# Last Modified: July 31 2023, 00:23:15, Monday
 # Modified By: Jing Mai <jingmai@pku.edu.cn>
 # -----
 # @history :
@@ -25,6 +25,9 @@ MESSAGE(STATUS "CMAKE_ROOT: " ${CMAKE_ROOT})
 project(OpenPARF)
 
 add_subdirectory(cmake/Ccache.cmake)
+
+# options
+option(ENABLE_ROUTER "Enable router build" ON)
 
 # disable frame pointer omission for debugging.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer")
@@ -87,6 +90,7 @@ message(STATUS "CMAKE_EXE_LINKER_FLAGS: " ${CMAKE_EXE_LINKER_FLAGS})
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 message(STATUS "CUDA_FOUND: ${CUDA_FOUND}")
+message(STATUS "ENABLE_ROUTER: ${ENABLE_ROUTER}")
 
 if(CUDA_FOUND)
   if(NOT CUDA_ARCH_LIST)

@@ -6,18 +6,18 @@
 # Last Modified Date: 08.10.2021
 # Last Modified By  : Jing Mai <jingmai@pku.edu.cn>
 
-from genericpath import exists
 import time
 import logging
 import torch
-import pdb
 import os
 
 from . import openparf as of
 from .placement import placer
+from openparf import configure
+if configure.compile_configurations["ENABLE_ROUTER"] == "ON":
+    from .routing import router
 from .routing import router
 import yaml
-import sys
 import os.path as osp
 
 

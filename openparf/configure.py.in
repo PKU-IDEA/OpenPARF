@@ -22,4 +22,5 @@ compile_configurations = {
     "CAIRO_FOUND": "${CAIRO_FOUND}",
     "CAIRO_INCLUDE_DIRS": "${CAIRO_INCLUDE_DIRS}",
     "CAIRO_LIBRARIES": "${CAIRO_LIBRARIES}",
+    "ENABLE_ROUTER": "${ENABLE_ROUTER}",
 }
