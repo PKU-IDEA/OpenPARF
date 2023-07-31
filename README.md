@@ -164,7 +164,7 @@ docker build . -t openparf:1.0 -f openparf.dockerfile
 
 #### Running the Docker Image
 
-We recommend that you have the following three directories/files on your host before running docker:
+We recommend that you have the following two directories/files on your host before running docker:
 
 1. `<source directory on host>`: The directory where you store the OpenPARF source code on host. See [Get the OpenPARF Source](#get-the-openparf-source) for more details.
 2. `<benchmark directory on host>`: The directory where you store the ISPD 2016/2017 benchmarks on host. See [Obtaining Benchmarks](#obtaining-benchmarks) for more details.
