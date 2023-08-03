@@ -255,9 +255,9 @@ You can adjust the configuration of cmake variables optionally (without buiding 
 
 To obtain the benchmarks, you can download the benchmark zip files from the provided Google Drive links. There are separate links for ISPD 2016 and ISPD 2017 FPGA Placement Benchmarks.
 
-- [ISPD 2016 FPGA Placement Benchmarks](https://drive.google.com/file/d/1kzg0NfEmJvwzhJADPE_Q0UjS6UpVCMZZ/view?usp=share_link)
+- ISPD 2016 FPGA Placement Benchmarks [[Google Drive](https://drive.google.com/file/d/1kzg0NfEmJvwzhJADPE_Q0UjS6UpVCMZZ/view?usp=share_link) / [Baidu Drive](https://pan.baidu.com/s/11TnGIyiCbAOvjIRliuamPg?pwd=521g)]
 
-- [ISPD 2017 FPGA Placement Benchmarks](https://drive.google.com/file/d/1Uf9qIZ8WL_jk03sIlAoS9dIrvYH3d1pz/view?usp=sharing)
+- ISPD 2017 FPGA Placement Benchmarks [[Google Drive](https://drive.google.com/file/d/1Uf9qIZ8WL_jk03sIlAoS9dIrvYH3d1pz/view?usp=sharing) / [Baidu Drive](https://pan.baidu.com/s/12Ixpa5nuCK5BOPZisI3g-A?pwd=dmny)]
 
 > <details>
 > <summary> 💡 Toggle to see how to download files from Google Drive in command line</summary>
