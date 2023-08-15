@@ -16,7 +16,6 @@ from .placement import placer
 from openparf import configure
 if configure.compile_configurations["ENABLE_ROUTER"] == "ON":
     from .routing import router
-from .routing import router
 import yaml
 import os.path as osp
 
