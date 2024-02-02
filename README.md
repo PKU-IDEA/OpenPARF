@@ -4,7 +4,7 @@
 
 ## News
 
-- 🎉 (2024/02/02) We are excited to announce the release of OpenPARF 2.0! This release includes a number of significant improvements and new features, including **multi-die FPGA placement** support and a new architecture definition format `Flexshelf`. We have also made a number of improvements to unit tests and documentation. We encourage all users to upgrade to this new version. For more information, please see the [release notes](https://github.com/PKU-IDEA/OpenPARF/releases/tag/2.0.0)!
+- 🎉 (2024/02/02) We are excited to announce the release of [OpenPARF 2.0](https://github.com/PKU-IDEA/OpenPARF/releases/tag/2.0.0)! This release includes a number of significant improvements and new features, including **multi-die FPGA placement** support and a new architecture definition format `Flexshelf`. We have also made a number of improvements to unit tests and documentation. We encourage all users to upgrade to this new version.
 
 ---
 
@@ -182,7 +182,7 @@ Now, please go to the [Build and Install OpenPARF](#build-and-install-openparf) 
 You can also pull a pre-built docker image from Docker Hub.
 
 ```bash
-docker pull magic3007/openparf:1.0
+docker pull magic3007/openparf:2.0
 ```
 
 ##### Building the image yourself
@@ -191,7 +191,7 @@ You can also build the docker image yourself. The dockerfile is located in `dock
 
 ```bash
 cd <source directory>/docker
-docker build . -t openparf:1.0 -f openparf.dockerfile
+docker build . -t openparf:2.0 -f openparf.dockerfile
 ```
 
 #### Running the Docker Image
@@ -210,7 +210,7 @@ docker run -itd --restart=always --network host -e TERM=$TERM \
   -v /etc/localtime:/etc/localtime:ro \
   -v <project directory on host>:/root/OpenPARF \
   -v <benchmark directory on host>:/root/benchmarks \
-  openparf:1.0 \
+  openparf:2.0 \
   /bin/bash;
 ```
 
@@ -224,7 +224,7 @@ docker run -itd --restart=always --network host -e TERM=$TERM \
   -v /etc/localtime:/etc/localtime:ro \
   -v <project directory on host>:/root/OpenPARF \
   -v <benchmark directory on host>:/root/benchmarks \
-  openparf:1.0 \
+  openparf:2.0 \
   /bin/bash;
 ```
 
