@@ -23,12 +23,19 @@ OPENPARF_BEGIN_NAMESPACE
 
 namespace ism_dp {
 /// Constructor
-ISMSolver::ISMSolver(const ISMProblem &prob, const ISMParam &param, IndexType num_threads, bool honorClockConstraints)
+ISMSolver::ISMSolver(const ISMProblem &prob, const ISMParam &param, IndexType num_threads, 
+                     bool honorClockConstraints, bool slrAwareFlag, 
+                     IndexType xl, IndexType yl, IndexType slrWidth, IndexType slrHeight)
     : _param(param),
       _spiralAccessor(std::max(prob.siteXYs.xSize(), prob.siteXYs.ySize())),
       _bndBox(0, 0, prob.siteXYs.xSize() - 1, prob.siteXYs.ySize() - 1),
       _num_threads(num_threads),
-      _honorClockConstraints(honorClockConstraints) {}
+      _honorClockConstraints(honorClockConstraints),
+      _slrAwareFlag(slrAwareFlag),
+      _xl(xl),
+      _yl(yl),
+      _slrWidth(slrWidth),
+      _slrHeight(slrHeight) {}
 
 /// Build the ISM problem
 void ISMSolver::buildISMProblem(const ISMProblem &prob) {
@@ -439,10 +446,19 @@ void ISMSolver::initISM() {
 void ISMSolver::computeAllNetBBoxes() {
   for (auto &net : _netArray) {
     net.bbox.set(kRealTypeMax, kRealTypeMax, kRealTypeMin, kRealTypeMin);
+    net.slr_bbox.set(kIndexTypeMax, kIndexTypeMax, kIndexTypeMin, kIndexTypeMin);
     for (IndexType pinId : net.pinIdArray) {
       const auto &pin = _pinArray[pinId];
       auto        loc = getLoc(pin.instId);
       net.bbox.encompass(loc + pin.offset);
+      if (_slrAwareFlag) {
+        IndexType xx = IndexType((loc.x() + pin.offset.x() - _xl) / _slrWidth);
+        IndexType yy = IndexType((loc.y() + pin.offset.y() - _yl) / _slrHeight);
+        net.slr_bbox.setXL(std::min(net.slr_bbox.xl(), xx));
+        net.slr_bbox.setXH(std::max(net.slr_bbox.xh(), xx));
+        net.slr_bbox.setYL(std::min(net.slr_bbox.yl(), yy));
+        net.slr_bbox.setYH(std::max(net.slr_bbox.yh(), yy));
+      }
     }
   }
 }
@@ -694,6 +710,7 @@ void ISMSolver::addInstToIndepSet(const ISMInstance &inst, IndexType ceFlip, Ind
 /// For each instance in the independent set, compute the bounding box of incident nets without considering the instance
 void ISMSolver::computeNetBBoxes(const IndexVector &set, ISMMemory &mem) const {
   mem.bboxes.clear();
+  mem.slr_bboxes.clear();
   mem.offset.clear();
   mem.netIds.clear();
   mem.ranges.clear();
@@ -757,6 +774,62 @@ void ISMSolver::computeNetBBoxes(const IndexVector &set, ISMMemory &mem) const {
           }
         }
       }
+
+      // Compute the SLL increase cost
+      if (_slrAwareFlag) {
+        mem.slr_bboxes.emplace_back(net.slr_bbox);
+        auto     &slr_bbox = mem.slr_bboxes.back();
+        IndexType loc_xx   = IndexType((loc.x() - _xl) / _slrWidth);
+        IndexType loc_yy   = IndexType((loc.y() - _yl) / _slrHeight);
+        if (loc_xx == slr_bbox.xl()) {
+          slr_bbox.setXL(kIndexTypeMax);
+          for (IndexType pId : net.pinIdArray) {
+            if (pId != pinId) {
+              const auto &p      = _pinArray[pId];
+              auto        s      = getLoc(p.instId);
+              IndexType   pin_xx = IndexType((s.x() + p.offsetX() - _xl) / _slrWidth);
+              slr_bbox.setXL(std::min(slr_bbox.xl(), pin_xx));
+              if (pin_xx == loc_xx) break;
+            }
+          }
+        }
+        if (loc_xx == slr_bbox.xh()) {
+          slr_bbox.setXH(-kIndexTypeMax);
+          for (IndexType pId : net.pinIdArray) {
+            if (pId != pinId) {
+              const auto &p      = _pinArray[pId];
+              auto        s      = getLoc(p.instId);
+              IndexType   pin_xx = IndexType((s.x() + p.offsetX() - _xl) / _slrWidth);
+              slr_bbox.setXH(std::max(slr_bbox.xh(), pin_xx));
+              if (pin_xx == loc_xx) break;
+            }
+          }
+        }
+        if (loc_yy == slr_bbox.yl()) {
+          slr_bbox.setYL(kIndexTypeMax);
+          for (IndexType pId : net.pinIdArray) {
+            if (pId != pinId) {
+              const auto &p      = _pinArray[pId];
+              auto        s      = getLoc(p.instId);
+              IndexType   pin_yy = IndexType((s.y() + p.offsetY() - _yl) / _slrHeight);
+              slr_bbox.setYL(std::min(slr_bbox.yl(), pin_yy));
+              if (pin_yy == loc_yy) break;
+            }
+          }
+        }
+        if (loc_yy == slr_bbox.yh()) {
+          slr_bbox.setYH(-kIndexTypeMax);
+          for (IndexType pId : net.pinIdArray) {
+            if (pId != pinId) {
+              const auto &p      = _pinArray[pId];
+              auto        s      = getLoc(p.instId);
+              IndexType   pin_yy = IndexType((s.y() + p.offsetY() - _yl) / _slrHeight);
+              slr_bbox.setYH(std::max(slr_bbox.yh(), pin_yy));
+              if (pin_yy == loc_yy) break;
+            }
+          }
+        }
+      }
     }
     mem.ranges.push_back(mem.bboxes.size());
   }
@@ -770,6 +843,7 @@ void ISMSolver::computeCostMatrix(const IndexVector &set, ISMMemory &mem) const 
     for (IndexType j = 0; j < set.size(); ++j) {
       // Compute the moving cost (HPWL incr.) of moving the i-th instance to the position of the j-th instance
       RealType cost = 0;
+      RealType sllIncreaseCost = 0;
       openparfAssert(!_instArray[set[j]].sol.isFixed());
       const auto &site    = _siteMap[_instArray[set[j]].sol.siteId];
       // If not clock region or half column compatiable, then the cost would be set to INTMAX
@@ -792,6 +866,16 @@ void ISMSolver::computeCostMatrix(const IndexVector &set, ISMMemory &mem) const 
         RealType     wt   = _netArray[mem.netIds[k]].weight;
         cost += wt * (_param.xWirelenWt * std::max(std::max(bbox.xl() - loc.x(), loc.x() - bbox.xh()), (RealType) 0.0) +
                       _param.yWirelenWt * std::max(std::max(bbox.yl() - loc.y(), loc.y() - bbox.yh()), (RealType) 0.0));
+        // Compute the SLL increase cost
+        if (_slrAwareFlag) {
+          const auto &slr_bbox = mem.slr_bboxes[k];
+          // min-cost bipartite imperfect match problem.
+          IndexType pin_xx = IndexType((loc.x() - _xl) / _slrWidth);
+          IndexType pin_yy = IndexType((loc.y() - _yl) / _slrHeight);
+          sllIncreaseCost += wt * _param.sllIncreaseWt *
+                           (std::max(std::max(slr_bbox.xl() - pin_xx, pin_xx - slr_bbox.xh()), (IndexType)0) +
+                            std::max(std::max(slr_bbox.yl() - pin_yy, pin_yy - slr_bbox.yh()), (IndexType)0));
+        }
       }
       // Compute the mate credit (credit given to assignment achieving internel nets)
       RealType mateCredit = 0;
@@ -801,7 +885,7 @@ void ISMSolver::computeCostMatrix(const IndexVector &set, ISMMemory &mem) const 
           mateCredit += (m == id ? _param.mateCredit : 0);
         }
       }
-      mem.costMtx(i, j) = (cost - mateCredit) * _param.flowCostScale;
+      mem.costMtx(i, j) = (cost - mateCredit + sllIncreaseCost) * _param.flowCostScale;
     }
   }
 }
@@ -933,6 +1017,16 @@ void ISMSolver::realizeMatching(const IndexVector &set, ISMMemory &mem) {
       auto &bbox = _netArray[mem.netIds[k]].bbox;
       bbox       = mem.bboxes[k];
       bbox.encompass(site.loc + mem.offset[k]);
+      // Consider SLL Minimization
+      if (_slrAwareFlag) {
+        auto     &slr_bbox = mem.slr_bboxes[k];
+        IndexType xx       = IndexType((site.loc.x() + mem.offset[k].x() - _xl) / _slrWidth);
+        IndexType yy       = IndexType((site.loc.y() + mem.offset[k].y() - _yl) / _slrHeight);
+        slr_bbox.setXL(std::min(slr_bbox.xl(), xx));
+        slr_bbox.setXH(std::max(slr_bbox.xh(), xx));
+        slr_bbox.setYL(std::min(slr_bbox.yl(), yy));
+        slr_bbox.setYH(std::max(slr_bbox.yh(), yy));
+      }
     }
   }
 }

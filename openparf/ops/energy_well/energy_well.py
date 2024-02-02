@@ -3,8 +3,8 @@
 # File              : energy_well.py
 # Author            : Jing Mai <magic3007@pku.edu.cn>
 # Date              : 09.17.2020
-# Last Modified Date: 09.17.2020
-# Last Modified By  : Jing Mai <magic3007@pku.edu.cn>
+# Last Modified Date: 01.16.2024
+# Last Modified By  : Runzhe Tao <rztao@my.swjtu.edu.cn>
 
 import logging
 import torch
@@ -25,16 +25,21 @@ logger = logging.getLogger(__name__)
 
 class EnergyWellFunction(Function):
     @staticmethod
-    def forward(ctx,
-                inst_pos,
-                half_inst_sizes,
-                inst_areas,
-                well_boxes,
-                inst_cr_avail_map,
-                energy_function_exponents,
-                num_crs,
-                placedb,
-                site2cr_map):
+    def forward(
+        ctx,
+        inst_pos,
+        half_inst_sizes,
+        inst_areas,
+        well_boxes,
+        inst_cr_avail_map,
+        energy_function_exponents,
+        site2cr_map,
+        cr2slr_map,
+        inst2slr_map,
+        inst_cnp_sll_optim_mask,
+        num_crs,
+        placedb,
+    ):
         forward_stopwatch = stopwatch.Stopwatch()
         forward_stopwatch.start()
 
@@ -42,22 +47,18 @@ class EnergyWellFunction(Function):
 
         if inst_pos.is_cuda:
             assert site2cr_map is not None
-            energy_arr, selected_crs = energy_well_cuda.forward(inst_pos,
-                                                                half_inst_sizes,
-                                                                well_boxes,
-                                                                inst_cr_avail_map,
-                                                                energy_function_exponents,
-                                                                num_crs,
-                                                                placedb, site2cr_map)
+            assert cr2slr_map is not None
+            energy_arr, selected_crs = energy_well_cuda.forward(
+                inst_pos, half_inst_sizes, well_boxes, inst_cr_avail_map,
+                energy_function_exponents, num_crs, placedb, site2cr_map,
+                cr2slr_map, inst2slr_map, inst_cnp_sll_optim_mask)
             torch.cuda.synchronize()
         else:
-            energy_arr, selected_crs = energy_well_cpp.forward(inst_pos,
-                                                                half_inst_sizes,
-                                                                well_boxes,
-                                                                inst_cr_avail_map,
-                                                                energy_function_exponents,
-                                                                num_crs,
-                                                                placedb)
+            assert cr2slr_map is not None
+            energy_arr, selected_crs = energy_well_cpp.forward(
+                inst_pos, half_inst_sizes, well_boxes, inst_cr_avail_map,
+                energy_function_exponents, num_crs, placedb, cr2slr_map,
+                inst2slr_map, inst_cnp_sll_optim_mask)
 
         ctx.save_for_backward(inst_pos,
                               half_inst_sizes,
@@ -75,7 +76,8 @@ class EnergyWellFunction(Function):
         backward_stopwatch = stopwatch.Stopwatch()
         backward_stopwatch.start()
 
-        (inst_pos, half_inst_sizes, well_boxes, selected_crs, energy_function_exponents, inst_areas) = ctx.saved_tensors
+        (inst_pos, half_inst_sizes, well_boxes, selected_crs,
+         energy_function_exponents, inst_areas) = ctx.saved_tensors
         assert grad_well_energy.numel() * 2 == inst_pos.numel()
         assert not torch.any(torch.isnan(grad_well_energy))
         assert inst_pos.dtype == half_inst_sizes.dtype
@@ -98,7 +100,7 @@ class EnergyWellFunction(Function):
             torch.cuda.synchronize()
         elapsed_time_ms = backward_stopwatch.elapsed(stopwatch.Stopwatch.TimeFormat.kMillSecond)
         logger.debug("Energy Well backward: %.3f ms" % elapsed_time_ms)
-        return pos_grad, None, None, None, None, None, None, None, None
+        return pos_grad, None, None, None, None, None, None, None, None, None, None, None
 
 
 class EnergyWell(nn.Module):
@@ -107,23 +109,33 @@ class EnergyWell(nn.Module):
         super(EnergyWell, self).__init__()
         self.inst_cr_avail_map, self.half_inst_sizes, self.inst_areas = None, None, None
         self.well_boxes, self.energy_function_exponents = None, None
+        self.inst_to_super_logic_region, self.inst_cnp_sll_optim_mask = None, None
         self.num_crs = num_crs
         self.placedb = placedb
         self.reset_box(well_boxes)
         self.reset_instance(inst_areas, inst_sizes, inst_cr_avail_map, energy_function_exponents)
-        self.site2cr_map = None
+        self.site2cr_map, self.cr2slr_map, self.slr_aware_flag = None, None, False
 
     def reset_box(self, well_boxes):
         self.well_boxes = well_boxes
 
-    def reset_instance(self, inst_areas, inst_sizes, inst_cr_avail_map, energy_function_exponents):
+    def reset_instance(self,
+                       inst_areas,
+                       inst_sizes,
+                       inst_cr_avail_map,
+                       energy_function_exponents,
+                       inst_to_super_logic_region=None,
+                       inst_cnp_sll_optim_mask=None,
+                       slr_aware_flag=False):
         self.inst_areas = inst_areas
         self.half_inst_sizes = None if inst_sizes is None else inst_sizes.mul(0.5)
         self.inst_cr_avail_map = inst_cr_avail_map
         self.energy_function_exponents = energy_function_exponents
+        self.inst_to_super_logic_region = inst_to_super_logic_region
+        self.inst_cnp_sll_optim_mask = inst_cnp_sll_optim_mask
+        self.slr_aware_flag = slr_aware_flag
 
-    def forward(self,
-                inst_pos):
+    def forward(self, inst_pos):
         """
         :param inst_pos: center of instances, array of (x, y) pairs, shape of (#instance, )
         :return: the well energy of instances
@@ -143,14 +155,24 @@ class EnergyWell(nn.Module):
         if inst_pos.is_cuda and self.site2cr_map is None:
             self.site2cr_map = energy_well_cpp.genSite2CrMap(self.placedb).to(inst_pos.device)
 
+        if self.cr2slr_map is None:
+            if self.slr_aware_flag:
+                self.cr2slr_map = energy_well_cpp.genCr2SlrMap(self.placedb).to(
+                    inst_pos.device)
+            else:
+                self.cr2slr_map = torch.zeros(self.num_crs, dtype=torch.int32).to(inst_pos.device)
+
         return EnergyWellFunction.apply(
-            inst_pos,
-            self.half_inst_sizes,
-            self.inst_areas,
+            inst_pos, 
+            self.half_inst_sizes, 
+            self.inst_areas, 
             self.well_boxes,
             self.inst_cr_avail_map,
             self.energy_function_exponents,
-            self.num_crs,
-            self.placedb,
-            self.site2cr_map
+            self.site2cr_map, 
+            self.cr2slr_map, 
+            self.inst_to_super_logic_region,
+            self.inst_cnp_sll_optim_mask, 
+            self.num_crs, 
+            self.placedb
         )

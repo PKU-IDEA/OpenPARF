@@ -40,6 +40,8 @@ public:
     struct ClockAvailCR;
 
 private:
+    using IndexVector = std::vector<IndexType>;
+    
     // Forward declaration
     struct ClockRegionInfo;
 
@@ -208,7 +210,7 @@ private:
         RealType                wt        = 0.0;
         IndexType               parentIdx = INDEX_TYPE_MAX;  // The cluster ID that this cluster is merged to
         IndexType               crId      = INDEX_TYPE_MAX;  // The clock region ID of the node's location
-        WrapperNetlist<T>* _nlPtr;
+        WrapperNetlist<T>*      _nlPtr;
     };
 
     /// Class to represent the atomic node set during node-to-clock region assignment
@@ -255,6 +257,7 @@ private:
         RealType                wt            = 1.0;               // The assignment weight of this node set
         std::vector<CrDem>      tgtCrDemArray;                     // The set of target (clock region ID, resource demand) pair
         std::vector<IndexType>  crIdArray;                         // The array of clock region IDs sorted by distance from small to large
+        bool                    sllOpt        = false;
     };
 
     /// Class to record the masked (forbidden) clocks in each clock region
@@ -787,6 +790,36 @@ private:
         }
     };
 
+    /// @brief Class for instances used in clock network planning
+    struct CNPInstance {
+
+      IndexType   numPins() const { return pinIdArray.size(); }
+      RealType    x() const { return loc.x(); }
+      RealType    y() const { return loc.y(); }
+
+      IndexType   id = kIndexTypeMax;   // Instance ID
+      XY<T>       loc;                  // Instance location
+      IndexVector pinIdArray;           // IDs of incident pins of this instance
+    };
+
+    /// @brief Class for nets used in clock network planning
+    struct CNPNet {
+      IndexType    numPins() const { return pinIdArray.size(); }
+
+      IndexType    id = kIndexTypeMax;   // Net ID
+      IndexVector  pinIdArray;           // IDs of pins in this net
+      IndexVector  pinIdArrayX;          // IDs of pins in this net sorted by their X from low to high
+      IndexVector  pinIdArrayY;          // IDs of pins in this net sorted by their Y from low to high
+      Box<IntType> slr_bbox;             // Net bounding box on SLR
+    };
+
+    /// @brief class for pins used in clock network planning
+    struct CNPPin {
+      IndexType  id     = kIndexTypeMax;   // ID of this pin
+      IndexType  instId = kIndexTypeMax;   // ID of the incident instance
+      IndexType  netId  = kIndexTypeMax;   // ID of the incident net
+    };
+
     /// Enum type for clock network planning solution
     enum class SolutionType
     {
@@ -810,6 +843,13 @@ private:
         std::vector<RRoute> rRouteArray;     // RRoute solution of each clock
         ClockAvailCR        clkAvailCR;      ///< Bounding box based routing estimation
         Vector2D<IndexType> crCkCountMap;    ///< Clock region demand map
+    };
+
+    // record all allocations that will reduce the SLL counts
+    struct SllOptimAlloc {
+        IndexType crId        = kIndexTypeMax;
+        IndexType slrId       = kIndexTypeMax;
+        RealType  sllIncrease = 0.;
     };
 
 public:
@@ -874,7 +914,7 @@ public:
     const ClockAvailCR &            clockAvailCR() const                  { return _clockAvailCR; }
     const ClockAvailHC &            clockAvailHC() const                  { return _clockAvailHC; }
     void                            exportClockTreeToFile(const std::string &fileName) const;
-    void                            transferSolutionToTorchTensor(int32_t* nodeToCr, uint8_t* clkAvailCR);
+    void                            transferSolutionToTorchTensor(int32_t* nodeToCr, uint8_t* clkAvailCR, uint8_t* instSllOptMask);
 
     bool nodeToCrIsClockLegal(IndexType nodeId, IndexType crId) const
     {
@@ -951,6 +991,9 @@ private:
     RealType nodeToHcProbability(IndexType nodeId, IndexType hcid) const;
     RealType gaussPhi(RealType x1, RealType x2, RealType mu, RealType sigma) const;
 
+    void                            initNetlistInfo();
+    RealType                        computeSLLIncrease(const std::vector<IndexType> &nodeIdArray, const ClockRegionInfo &crInfo);
+
 private:
     WrapperDatabase *  _db;
     WrapperNetlist<T> *_nlPtr;
@@ -978,6 +1021,12 @@ private:
     std::vector<RRoute>              _rRouteArray;       // The R-layer routing solution
     Vector2D<std::vector<IndexType>> _crToNodeIdArray;   // The IDs of nodes in each clock region
     Vector2D<IndexType>              _crCkCountMap;      ///< Clock region demand map
+
+    std::vector<CNPInstance>         _instArray;           // All instances
+    std::vector<CNPPin>              _pinArray;            // All pins
+    std::vector<CNPNet>              _netArray;            // All nets
+    std::set<IndexType>              _sllOptInstIdArray;   // A set of instance IDs that are candidates for SLL optimization.
+    std::vector<SllOptimAlloc>       _nodeToSllOptAllocs;  // A vector mapping nodes (instances) to their SLL optimization allocations.
 };
 
 /// Get the distance between a given XY to a clock region

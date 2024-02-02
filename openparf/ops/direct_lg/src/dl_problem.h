@@ -32,6 +32,8 @@ using container::Box;
 using container::Vector2D;
 using container::XY;
 
+constexpr IntType   kIntTypeMax   = std::numeric_limits<IntType>::max();
+constexpr IntType   kIntTypeMin   = std::numeric_limits<IntType>::min();
 constexpr IndexType kIndexTypeMax = std::numeric_limits<IndexType>::max();
 constexpr RealType  kRealTypeMax  = std::numeric_limits<RealType>::max();
 constexpr RealType  kRealTypeMin  = std::numeric_limits<RealType>::lowest();
@@ -98,9 +100,12 @@ struct DLProblem {
   IndexType                   numLUTInst;        // number of LUT instances
   IndexType                   numFFInst;         // number of FF instances
   IndexType                   numSiteSLICE;      // number of SLICE sites.
+  IndexType                   slrWidth;          // SLR width
+  IndexType                   slrHeight;         // SLR height
   std::vector<bool>           isInstFixed;       // Size = #inst, whether the instance is fixed.
-  bool                        useXarchLgRule;   // Consider xarch's special constraints. For now it's
+  bool                        useXarchLgRule;    // Consider xarch's special constraints. For now it's
                                                  // just LRAM and SHIFT
+  bool                        slrAwareFlag;      // consider multi-die architecture
 };
 }   // namespace direct_lg
 

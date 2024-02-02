@@ -134,6 +134,7 @@ class DLSolver {
     IndexVector   pinIdArrayY;              // IDs of pins in this net sorted by their Y from low to high
     RealType      weight = 0;               // Wirelength weight
     Box<RealType> bbox;                     // Net bounding box
+    Box<IntType>  slr_bbox;                 // Net bounding box in SLR
   };
 
   /// Class for pins used in DL
@@ -382,6 +383,7 @@ class DLSolver {
   bool         fitLUTsToCandidateImpl(const IndexVector &luts, Candidate::Implementation &impl);
   RealType     computeCandidateScore(const Candidate &cand);
   RealType     computeWirelenImprov(const DLNet &net, const IndexVector &pins, const XY<RealType> &loc) const;
+  RealType     computeSLLIncrease(const DLNet &net, const IndexVector &pins, const XY<RealType> &loc) const;
   XY<RealType> computeInstCentroid(const IndexVector &instIdArray) const;
   bool         instAndSiteAreCompatible(const DLInstance &instType, const DLSite &siteType) const;
   bool         candidateIsValid(const Candidate &cand) const;
@@ -448,6 +450,12 @@ class DLSolver {
 
   IndexType                       _num_LUTs;   // #LUTs per CLB
   IndexType                       _num_FFs;    // #FFs per CLB
+
+  // Params for multi-die architecture
+  IntType                         _xl;          // Lower bound coordinate in the x-dimension.
+  IntType                         _yl;          // Lower bound coordinate in the y-dimension.
+  IntType                         _slrWidth;    // SLR width
+  IntType                         _slrHeight;   // SLR height
 
   // Clock Constraint Attributes
   IndexType                       _numLUTInst;   // number of LUT instances

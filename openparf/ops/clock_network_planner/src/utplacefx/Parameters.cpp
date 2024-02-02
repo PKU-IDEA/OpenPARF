@@ -32,6 +32,11 @@ RealType               Parameters::cnpHalfColumnPlanningGaussianSigma           
 RealType               Parameters::cnpMinCostFlowCostScaling                                   = 1000.0; // The scaling factor for cost in min-cost flow
 IndexType              Parameters::cnpMinCostFlowNodeAssignNumNearestClockRegionInit           = 4;      // The initial number of clock regions being considered for each node set during MCF-based assignment
 IndexType              Parameters::cnpMinCostFlowNodeAssignNumNearestClockRegionIncr           = 4;      // The number of clock regions increased each time for each node set during MCF-based assignment
+
+// Parameters for multi-die architecture
+IndexType              Parameters::cnpSuperLongLineImporvMaxNetDegree                          = 32;     // The maximum net degree for potential increase on super long line counts
+RealType               Parameters::weightBetweenDistanceAndSllIncrease                         = 10.0;   // The weight between the XY Distance and the potential increase in Sll counts 
+bool                   Parameters::slrAwareFlag                                                = false;
 }
 OPENPARF_END_NAMESPACE
 

@@ -66,6 +66,8 @@ struct DirectLegalizeParam {
                                                           // count in the candidate score computation
   double                     wirelenImprovWt;             // The coefficient for the wirelength improvement in
                                                           // the candidate score computation
+  double                     sllIncreaseWt;               // The coefficient for the wirelength increase in
+                                                          // the candidate score computation
   uint32_t                   greedyExpansion;             // The extra radius value to search after the
                                                           // first legal location in greedy legalization
   uint32_t                   ripupExpansion;              // The extra radius value to search after the first
@@ -100,6 +102,9 @@ struct DirectLegalizeParam {
 
   // Whether use xarch benchmark.
   bool                       useXarchLgRule;
+
+  // Multi-die architecture
+  bool                       slrAwareFlag;
 };
 
 

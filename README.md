@@ -1,14 +1,18 @@
 # OpenPARF
 
 🕹 OpenPARF is an open-source FPGA placement and routing framework build upon the deep learning toolkit [PyTorch](https://github.com/pytorch/pytorch). It is designed to be flexible, efficient, and extensible.
+Currently, OpenPARF has expanded its capabilities to support **multi-die FPGA placement**.
 
 <!-- toc -->
 
 - [OpenPARF](#openparf)
   - [More About OpenPARF](#more-about-openparf)
     - [A Multi-Electrostatic-based FPGA P\&R Framework](#a-multi-electrostatic-based-fpga-pr-framework)
-    - [Reference Flow](#reference-flow)
+    - [Single-Die Reference Flow](#single-die-reference-flow)
     - [Demo](#demo)
+  - [Multi-Die Placement for OpenPARF](#multi-die-placement-for-openparf)
+    - [Brief Introduction](#brief-introduction)
+    - [Multi-Die Reference Flow](#multi-die-reference-flow)
   - [Prerequisites](#prerequisites)
     - [Build from Source](#build-from-source)
       - [Install Dependencies](#install-dependencies)
@@ -32,6 +36,10 @@
       - [More Advanced Usages](#more-advanced-usages)
         - [Running Benchmarks in Batches](#running-benchmarks-in-batches)
         - [Vivado Flow for Placement Evaluation](#vivado-flow-for-placement-evaluation)
+    - [Customizing Multi-Die FPGA Architecture](#customizing-multi-die-fpga-architecture)
+      - [Architecture Definition Format](#architecture-definition-format)
+      - [Customizing the Architecture](#customizing-the-architecture)
+      - [Modify the SLL Counts Lookup Table (Optional)](#modify-the-sll-counts-lookup-table-optional)
   - [Resources](#resources)
   - [Releases and Contributing](#releases-and-contributing)
   - [The Team](#the-team)
@@ -66,12 +74,13 @@ OpenPARF is a powerful FPGA P&R framework that utilizes a multi-electrostatic-ba
 - A wide range of logical unit types including LUT, FF, DSP, BRAM, IO, Distributed RAM, and Shift Register
 - Support for SLICEL and SLICEM CLB heterogeneous types
 - Clock routing constraints
+- Advanced support for multi-die FPGA placement
 - ...
 ```
 
 OpenPARF has proven to be a powerful tool, outperforming the state-of-the-art academic FPGA P&R tools in terms of wired length and placement speed. With a `0.4-12.7%` improvement in routed wirelength and a speedup of over `2X` in placement, OpenPARF is a highly efficient FPGA P&R framework that offers optimized results with minimal manual intervention.
 
-### Reference Flow
+### Single-Die Reference Flow
 
 ![overflow](README.assets/overflow.jpg)
 
@@ -82,6 +91,19 @@ The following are the visualization for electrostatic fields in benchmark `ISPD2
 |            **LUT**            |           **FF**            |            **DSP**            |            **BRAM**             |
 | :---------------------------: | :-------------------------: | :---------------------------: | :-----------------------------: |
 | ![LUT](README.assets/lut.gif) | ![ff](README.assets/ff.gif) | ![dsp](README.assets/dsp.gif) | ![BRAM](README.assets/bram.gif) |
+
+## Multi-Die Placement for OpenPARF
+### Brief Introduction
+In the ongoing endeavor to enhance OpenPARF, we have integrated a key feature from the [LEAPS](https://ieeexplore.ieee.org/document/10364626) - a specialized solution aimed at minimizing super long line (SLL) counts in multi-die FPGA placement. 
+This integration not only enriches OpenPARF's capabilities but also addresses the complexities of modern multi-die FPGA designs. 
+
+Compared to the existing state-of-the-art method, OpenPARF demonstrates significant superiority, achieving an average reduction of `43.08%` in the SLL counts and a `9.99%` optimization in half-perimeter wirelength (HPWL). Notably, OpenPARF leverages GPU acceleration technology, achieving a remarkable runtime improvement of up to `34.34X`. 
+
+### Multi-Die Reference Flow
+
+<p align="center">
+  <img src="README.assets/multi-die_overflow.jpg" alt="multi-die_overflow" width="60%"/>
+</p>
 
 ## Prerequisites
 
@@ -117,7 +139,7 @@ mamba install cmake boost bison
 mamba install pytorch==1.7.1 torchvision==0.8.2 cudatoolkit=11.0 -c pytorch
 
 # * python packages
-pip install hummingbird-ml pyyaml
+pip install hummingbird-ml pyyaml networkx tqdm
 ```
 
 #### Install Gurobi (Optional)
@@ -245,7 +267,7 @@ You can adjust the configuration of cmake variables optionally (without buiding 
 - `CMAKE_INSTALL_PREFIX`: The directory where you want to install OpenPARF (e.g., `../install`).
 - `CMAKE_BUILD_TYPE`: The build type, can be `Release` or `Debug`. Default is `Release`.
 - `USE_CCACHE`: Whether to use ccache to speed up compilation. Default is `OFF`.
-- `ENABLE_ROUTER`: Whether to compile the router. Default is `ON`. If you do not need a router, you can set it to `OFF`.
+- `ENABLE_ROUTER`: Whether to compile the router. Default is `OFF`. If you need a router, you can set it to `ON`.
 
 ## Getting Started
 
@@ -253,11 +275,17 @@ You can adjust the configuration of cmake variables optionally (without buiding 
 
 #### Obtaining Benchmarks
 
-To obtain the benchmarks, you can download the benchmark zip files from the provided Google Drive links. There are separate links for ISPD 2016 and ISPD 2017 FPGA Placement Benchmarks.
+To obtain the benchmarks, you can download the benchmark zip files from the provided Google Drive links. There are separate links for ISPD 2016 and ISPD 2017 FPGA Placement Benchmarks, along with their respective Flexshelf versions.
+
+**Note**: The Flexshelf versions of these benchmarks draw upon the architectural description files from the [VTR](https://raw.githubusercontent.com/verilog-to-routing/vtr-verilog-to-routing/master/vtr_flow/arch/ispd/ultrascale_ispd.xml) project as a foundational reference. This approach not only provides a comprehensive and realistic benchmarking environment but also facilitates easy customization of architectures, making it particularly beneficial for advanced FPGA designs that require tailored configurations.
 
 - ISPD 2016 FPGA Placement Benchmarks [[Google Drive](https://drive.google.com/file/d/1kzg0NfEmJvwzhJADPE_Q0UjS6UpVCMZZ/view?usp=share_link) / [Baidu Drive](https://pan.baidu.com/s/11TnGIyiCbAOvjIRliuamPg?pwd=521g)]
 
+- ISPD 2016 FPGA Placement Flexshelf Benchmarks [[Google Drive](https://drive.google.com/file/d/1lwYSwfIPfzOxi_SfOZj5DyiwROLJDFd0/view?usp=sharing) / [Baidu Drive](https://pan.baidu.com/s/1xHJ7kXTHshe-jCl4HgTuXA?pwd=o57k)]
+
 - ISPD 2017 FPGA Placement Benchmarks [[Google Drive](https://drive.google.com/file/d/1Uf9qIZ8WL_jk03sIlAoS9dIrvYH3d1pz/view?usp=sharing) / [Baidu Drive](https://pan.baidu.com/s/12Ixpa5nuCK5BOPZisI3g-A?pwd=dmny)]
+
+- ISPD 2017 FPGA Placement Flexshelf Benchmarks [[Google Drive](https://drive.google.com/file/d/1smt4lGUFdhs0TjPBzi9PqiyfA9n2Uwoy/view?usp=sharing) / [Baidu Drive](https://pan.baidu.com/s/1S7cfv26zURKo9W6WXwB3JA?pwd=8nqv)]
 
 > <details>
 > <summary> 💡 Toggle to see how to download files from Google Drive in command line</summary>
@@ -279,7 +307,10 @@ Once the files have downloaded, extract their contents to the `<benchmark direct
 ```bash
 <benchmark directory>
 ├── ispd2016
+├── ispd2016_flexshelf
 ├── ispd2017
+├── ispd2017_flexshelf
+
 ```
 
 #### Linking Benchmarks
@@ -288,7 +319,9 @@ Link ispd2016 and ispd2017 folders under `<installation directory>/benchmarks` b
 
 ```bash
 ln -s <benchmark directory>/ispd2016 <installation directory>/benchmarks/ispd2016
+ln -s <benchmark directory>/ispd2016_flexshelf <installation directory>/benchmarks/ispd2016_flexshelf
 ln -s <benchmark directory>/ispd2017 <installation directory>/benchmarks/ispd2017
+ln -s <benchmark directory>/ispd2017_flexshelf <installation directory>/benchmarks/ispd2017_flexshelf
 ```
 
 #### Running the Benchmarks
@@ -297,10 +330,13 @@ To run the benchmarks, navigate to the installation directory and execute the fo
 
 ```bash
 cd <installation directory>
-python openparf.py --config unittest/regression/ispd2016/FPGA01.json
+python openparf.py --config unittest/regression/ispd2016_flexshelf/FPGA01_flexshelf.json
 ```
 
-Note that the `openparf.py` script requires the `--config` option to specify the configuration file to use. The appropriate configuration file for the benchmark should exist in the corresponding directory (`unittest/regression/ispd2016/`) before running the command. Other benchmarks can also be run by selecting the appropriate configuration from their respective directory such as `unittest/regression/ispd2016` and `unittest/regression/ispd2017`.
+Note that the `openparf.py` script requires the `--config` option to specify the configuration file to use. The appropriate configuration file for the benchmark should exist in the corresponding directory (`unittest/regression/ispd2016_flexshelf/`) before running the command.
+
+- For **Single-Die** Place & Route, use scripts from `unittest/regression/ispd2016`, `unittest/regression/ispd2016_flexshelf`,  `unittest/regression/ispd2017`, and `unittest/regression/ispd2017_flexshelf`.
+- For **Multi-Die** Place, use scripts from `unittest/regression/ispd2016_flexshelf` and `unittest/regression/ispd2017_flexshelf`.
 
 It is essential to ensure all dependencies and the Python environment have been correctly set up before running the command. Once everything is in order, the benchmark will commence, and the outcomes will be sent to the output directory.
 
@@ -309,16 +345,17 @@ It is essential to ensure all dependencies and the Python environment have been 
 OpenPARF allows configuration of benchmark parameters using JSON. Default parameters can be found in `openparf/params.json`, while users can use `--config` to pass custom parameters which will override defaults. For example:
 
 ```bash
-python openparf.py --config unittest/regression/ispd2016/FPGA01.json
+python openparf.py --config unittest/regression/ispd2016_flexshelf/FPGA01_flexshelf.json
 ```
 
-The parameter configuration in `unittest/regression/ispd2016/FPGA01.json` will override the defaults in `openparf/params.json`.
+The parameter configuration in `unittest/regression/ispd2016_flexshelf/FPGA01_flexshelf.json` will override the defaults in `openparf/params.json`.
 
 Common modifiable parameters include
 
 - `gpu`: Enable GPU acceleration or not. Default is 0.
 - `result_dir`: Specify the directory to save P&R results.
 - `route_flag`: Enable router or not. Default is 0.
+- `slr_aware_flag`: Enable multi-die placer or not. Default is 1.
 
 For more detailed information on parameters, please see the `description` field in `openparf/params.json`.
 
@@ -333,10 +370,12 @@ We also provide scripts to run ISPD2016 and ISPD2017 in batches. Navigate to the
 ```bash
 cd <installation directory>
 <source directory>/scripts/run_ispd2016_benchmark.sh # ispd 2016
+<source directory>/scripts/run_ispd2016_flexshelf_benchmark.sh # ispd 2016 flexshelf
 <source directory>/scripts/run_ispd2017_benchmark.sh # ispd 2017
+<source directory>/scripts/run_ispd2017_flexshelf_benchmark.sh # ispd 2017 flexshelf
 ```
 
-The results can be found in `<installation directory>/../ispd2016_log` and `<installation directory>/../ispd2017_log`, respectively. Please refer to the script for specific configurations.
+The results can be found in `<installation directory>/../ispd2016_log`, `<installation directory>/../ispd2016_flexshelf_log`, `<installation directory>/../ispd2017_log` and `<installation directory>/../ispd2017_flexshelf_log`, respectively. Please refer to the script for specific configurations.
 
 ##### Vivado Flow for Placement Evaluation
 
@@ -345,6 +384,69 @@ If you are looking to evaluate a placement algorithm, you can do so directly wit
 When you import the OpenPARF placement result file into Vivado, it will be located in `<result dir>/<benchmark name>.pl` (e.g., `results/FPGA01/FPGA01.pl`). Keep in mind that the `<result dir>` and `<benchmark name>` are parameters set within the JSON configuration.
 
 **NOTE** that if you want the evaluate the placement via Vivado, you can disable the routing stage in OpenPARF by simply setting the `route_flag` to 0 before running the tool.
+
+### Customizing Multi-Die FPGA Architecture
+In OpenPARF, customizing the architecture of multi-die FPGA is a vital feature that allows for greater flexibility and adaptability in FPGA design. Below, we provide detailed instructions on how to define and modify the architecture to suit specific design requirements.
+
+#### Architecture Definition Format
+OpenPARF uses a structured XML format for defining the architecture of multi-die FPGAs.
+These architecture files can be found at  `benchmarks/arch/ultrascale/multi-die_layout_<{num_cols}x{num_rows}>.xml`.
+The format includes several key tags such as `<resources>`, `<primitives>`, `<global_sw>`, `<tile_blocks>`, `<cores>`, and `<chip>`. 
+The `<chip>` tag is crucial as it describes the topology of SLRs and their types.
+
+Example of a `2x2` SLR topology in XML format:
+```xml
+<chip name="demo_chip">
+    <grid name="chip_grid" cols="2" rows="2">
+        <core name="CORE_0" type="CORE_A" x="0" y="0" width="168" height="120"/>
+        <core name="CORE_1" type="CORE_A" x="0" y="1" width="168" height="120"/>
+        <core name="CORE_2" type="CORE_B" x="1" y="0" width="168" height="120"/>
+        <core name="CORE_3" type="CORE_B" x="1" y="1" width="168" height="120"/>
+    </grid>
+</chip>
+```
+#### Customizing the Architecture
+To customize the multi-die FPGA architecture in OpenPARF:
+- **Define the SLR Topology**: Adjust the `<grid>` tag within the `<chip>` element to match your desired SLR topology, specifying the `cols` and `rows`.
+
+- **Specify Core Details**: Each core within the grid should have its `name`, `type`, `x`, `y`, `width`, and `height` attributes defined, aligning with the SLR specifications in the `<cores>` section.
+
+- **Adjust Resources and Constraints**: Customize settings in the `<resources>`, `<primitives>`, `<global_sw>`, and `<tile_blocks>` tags to suit your topology and core details. Implement specific customizations or adhere to default settings if they meet your needs.
+
+- **Recheck the Architecture**: Always recheck the customized architecture for correctness and alignment with your design requirements.
+
+Following these guidelines will enable users to customize the architecture of multi-die FPGAs in OpenPARF, enhancing the adaptability and efficiency of FPGA designs.
+
+#### Modify the SLL Counts Lookup Table (Optional)
+When customizing the architecture of a multi-die FPGA, especially for SLR topologies beyond the predefined `1x4` or `2x2` layouts, it's crucial to also update the SLL counts lookup table to align with the new architecture. This step ensures that the FPGA design accurately reflects the customized topology.
+
+##### Step 1: Generating a Custom SLL Counts Lookup Table
+Run the `scripts/compute_sll_counts_table.py` script with your specific SLR topology dimensions (`num_cols` and `num_rows`). 
+
+Example command:
+  ```shell
+  python compute_sll_counts_table.py --num_cols <num cols> --num_rows <num rows> --output <filename>
+  ```
+- Replace `<filename>` with your chosen file name, `<num cols>` and `<num rows>` with the number of columns and rows in your SLR topology.
+- After running the script, a file named `<filename>.npy` will be generated. Move this file to the directory `<installation directory>/openparf/ops/sll/`.
+
+Note: Typically, `num_cols` and `num_rows` should not exceed 5 due to fabrication and technology constraints. The script is optimized for efficient execution within this scale.
+
+##### Step 2: Integrating the SLL Lookup Table into Your Project
+To use the newly generated SLL counts lookup table in your project, modify the code in the file located at  `<install>/openparf/ops/sll/sll.py` as follows:
+- Locate the section of the code initializing the SLL counts table. It will typically have predefined tables for `1x4` and `2x2` SLR topologies.
+- For SLR topologies other than `1x4` and `2x2`, you will see a placeholder where the table should be loaded. Uncomment and modify this section:
+  ```python
+  else:
+    self.sll_counts_table = torch.from_numpy(
+        np.load(
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "<filename>.npy"))).to(dtype=torch.int32)
+  ```
+  Replace `<filename>` with the name of your generated `.npy` file.
+
+This process will replace the default lookup table with the one you generated, tailoring the functionality to your specific SLR topology.
 
 ## Resources
 
@@ -364,11 +466,14 @@ OpenPARF is maintained by [PKU-IDEA Lab](https://github.com/PKU-IDEA) at Peking 
 
 - [Jing Mai](https://magic3007.github.io/), [Jiarui Wang](https://tomjerry213.github.io/) and [Yibai Meng](https://www.mengyibai.com/) composed the initial release.
 
+- Runzhe Tao developed and integrated the LEAPS for multi-die plcaement in OpenPARF.
+
 ## Publications
 
 - [Jing Mai](https://magic3007.github.io/), [Jiarui Wang](https://tomjerry213.github.io/), [Zhixiong Di](http://www.dizhixiong.cn/), [Guojie Luo](https://scholar.google.com/citations?user=8-mT29YAAAAJ&hl=en), [Yun Liang](https://ericlyun.github.io/) and [Yibo Lin](https://yibolin.com/), "**OpenPARF: An Open-Source Placement and Routing Framework for Large-Scale Heterogeneous FPGAs with Deep Learning Toolkit**", _International Conference on ASIC (ASICON)_, 2023. [[paper]](https://arxiv.org/abs/2306.16665)
 - [Jing Mai](https://magic3007.github.io/), [Yibai Meng](https://www.mengyibai.com/), [Zhixiong Di](http://www.dizhixiong.cn/), and [Yibo Lin](https://yibolin.com/), “**Multi-electrostatic FPGA placement considering SLICEL-SLICEM heterogeneity and clock feasibility**,” in _Proceedings of the 59th ACM/IEEE Design Automation Conference (DAC)_, San Francisco California: ACM, Jul. 2022, pp. 649–654. doi: 10.1145/3489517.3530568. [[paper]](https://doi.org/10.1145/3489517.3530568)
 - [Jiarui Wang](https://tomjerry213.github.io/), [Jing Mai](https://magic3007.github.io/), [Zhixiong Di](http://www.dizhixiong.cn/), and [Yibo Lin](https://yibolin.com/), “**A Robust FPGA Router with Concurrent Intra-CLB Rerouting**,” in _Proceedings of the 28th Asia and South Pacific Design Automation Conference (ASP-DAC)_, Tokyo Japan: ACM, Jan. 2023, pp. 529–534. doi: 10.1145/3566097.3567898. [[paper]](https://doi.org/10.1145/3566097.3567898)
+- [Zhixiong Di](http:///www.dizhixiong.cn/), Runzhe Tao, [Jing Mai](https://magic3007.github.io/), Lin Chen, [Yibo Lin](https://yibolin.com/), "**LEAPS:Topological-<u>L</u>ayout-Adaptable Multi-di<u>e</u> FPG<u>A</u> <u>P</u>lacement for <u>S</u>uper Long Line Minimization**", _IEEE Transactions on Circuits and Systems I: Regular Papers_, doi: 10.1109/TCSI.2023.3340554, 2023. [[paper]](https://ieeexplore.ieee.org/document/10364626)
 <details><summary>CLICK ME to show the bibtex.</summary>
 
 <p>
@@ -396,6 +501,15 @@ OpenPARF is maintained by [PKU-IDEA Lab](https://github.com/PKU-IDEA) at Peking 
   pages         = {529--534},
   year          = {2023}
 }
+
+@article{PLACE_TCASI2023_Di,
+  title         ={LEAPS: Topological-Layout-Adaptable Multi-Die FPGA Placement for Super Long Line Minimization},
+  author        ={Di, Zhixiong and Tao, Runzhe and Mai, Jing and Chen, Lin and Lin, Yibo},
+  journal       ={IEEE Transactions on Circuits and Systems I: Regular Papers},
+  year          ={2023},
+  publisher     ={IEEE}
+}
+
 ```
 
 </p>

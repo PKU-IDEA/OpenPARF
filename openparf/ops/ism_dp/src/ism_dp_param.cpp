@@ -37,6 +37,7 @@ ISMDetailedPlaceParam ISMDetailedPlaceParam::ParseFromPyobject(const py::object 
   param.yWirelenWt             = pyparam.attr("yWirelenWt").cast<decltype(param.yWirelenWt)>();
   param.verbose                = pyparam.attr("verbose").cast<decltype(param.verbose)>();
   param.honorClockConstraints  = pyparam.attr("honorClockConstraints").cast<bool>();
+  param.slrAwareFlag           = pyparam.attr("slrAwareFlag").cast<bool>();
   return param;
 }
 

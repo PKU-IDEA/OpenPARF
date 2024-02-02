@@ -24,6 +24,7 @@ using IndexType                   = std::int32_t;
 using RealType                    = float;
 
 constexpr IndexType kIndexTypeMax = std::numeric_limits<IndexType>::max();
+constexpr IndexType kIndexTypeMin = std::numeric_limits<IndexType>::min();
 constexpr RealType  kRealTypeMax  = std::numeric_limits<RealType>::max();
 constexpr RealType  kRealTypeMin  = std::numeric_limits<RealType>::lowest();
 

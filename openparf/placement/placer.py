@@ -32,6 +32,7 @@ if sys.version_info[0] < 3:
     import cPickle as pickle
 else:
     import _pickle as pickle
+import math
 import numpy as np
 import torch
 import torch.nn as nn
@@ -52,6 +53,7 @@ datatypes = {"float32": torch.float32, "float64": torch.float64}
 
 debug_timing_flag = False
 
+import pdb
 
 class Placer(nn.Module):
     """Top placement engine"""
@@ -144,7 +146,14 @@ class Placer(nn.Module):
         self.eta_update_counter = None
         self.timing_optimization_counter = 0
 
-    def reset_optimizer(self, opt_iter):
+        # Psi update method for super long line minimization
+        self.delta_sll_ema_alpha = 0.4
+        self.delta_sll_ema = 0.0
+
+        self.cur_metric_record = None
+        self.prev_metric_record = None
+
+    def reset_optimizer(self, opt_iter, sll_flag=False):
         # reset density and overflow operator to update stretched sizes
         self.op_cls.density_op.reset()
         self.op_cls.overflow_op.reset()
@@ -156,7 +165,7 @@ class Placer(nn.Module):
         self.update_gamma(opt_iter, overflow)
 
         # reset multiplier(lambda)
-        self.reset_lambdas(self.params.reset_lambda_param)
+        self.reset_lambdas(self.params.reset_lambda_param, sll_flag)
         # Alternative way to reset the lambda
         # self.initialize_lambdas()
 
@@ -167,7 +176,7 @@ class Placer(nn.Module):
         self.optimizer.load_state_dict(self.optimizer_initial_state)
 
         # learning rate must be reset after loading the optimizer state
-        self.initialize_learning_rate(self.model, self.optimizer, 0.1)
+        self.initialize_learning_rate(self.model, self.optimizer, 0.1, sll_flag=sll_flag)
 
         if self.params.gp_timing_adjustment:
             # reset timing adjustment
@@ -211,7 +220,7 @@ class Placer(nn.Module):
             return False
         return True
 
-    def _gp_adjust_area(self, current_metric, opt_iter):
+    def _gp_adjust_area(self, current_metric, opt_iter, sll_flag=False):
         """adjust cell(instance) area
 
         :param current_metric: current metric
@@ -457,7 +466,7 @@ class Placer(nn.Module):
                     ].sum(dim=0)
                 )
 
-                self.reset_optimizer(opt_iter)
+                self.reset_optimizer(opt_iter, sll_flag=sll_flag)
             log_dict(
                 logger.info,
                 {
@@ -681,7 +690,7 @@ class Placer(nn.Module):
         else:
             return True
 
-    def _confine_clock_region(self, opt_iter, metrics):
+    def _confine_clock_region(self, opt_iter, metrics, sll_flag=False):
         with DeferredAction() as defer:
             self.confine_fence_region_stopwatch.start()
 
@@ -754,17 +763,30 @@ class Placer(nn.Module):
 
             cnp_algo = self.params.clock_network_planner_algorithm
             if cnp_algo == "utplacefx":
+                # TODO(Runzhe Tao, rztao@my.swjtu.edu.cn): Refine SLR-aware CNP for balanced performance across varied cases
+                self.op_cls.clock_network_planner_op.reset_slr_aware_flag(slr_aware_flag=False)
                 # TODO: add logic to decide when to assign clock region
                 (
                     movable_and_fixed_inst_to_clock_region,
                     self.data_cls.clock_available_clock_region,
                     movable_and_fixed_inst_cr_avail_map,
                     movable_and_fixed_avail_crs,
+                    movable_and_fixed_inst_sll_optim_mask,
                 ) = self.op_cls.clock_network_planner_op.forward(
                     pos=lb_corner_pos[
                         self.data_cls.movable_range[0] : self.data_cls.fixed_range[1]
                     ]
                 )
+                x_coords = (movable_and_fixed_inst_to_clock_region // self.data_cls.clock_region_size[1]) // (self.data_cls.clock_region_size[0] / self.data_cls.num_slrX)
+                y_coords = (movable_and_fixed_inst_to_clock_region % self.data_cls.clock_region_size[1]) // (self.data_cls.clock_region_size[1] / self.data_cls.num_slrY)
+                movable_and_fixed_inst_to_super_logic_region = x_coords * self.data_cls.num_slrY + y_coords
+                self.data_cls.movable_inst_to_super_logic_region = (
+                    movable_and_fixed_inst_to_super_logic_region[:movable_insts_num].to(torch.int32)
+                )
+                self.data_cls.movable_inst_cnp_sll_optim_mask = (
+                    movable_and_fixed_inst_sll_optim_mask[:movable_insts_num]
+                )
+                # logger.info("#num_sll_cnp_opt_insts: %d" %self.data_cls.movable_inst_cnp_sll_optim_mask.nonzero().shape[0])
                 self.data_cls.movable_inst_to_clock_region = (
                     movable_and_fixed_inst_to_clock_region[:movable_insts_num]
                 )
@@ -826,6 +848,13 @@ class Placer(nn.Module):
                 energy_function_exponents=self.data_cls.fence_region_cost_parameters.energy_function_exponent.to(
                     self.device
                 ),
+                inst_to_super_logic_region=self.data_cls.movable_inst_to_super_logic_region.to(
+                    self.device
+                ),
+                inst_cnp_sll_optim_mask=self.data_cls.movable_inst_cnp_sll_optim_mask.to(
+                    self.device
+                ),
+                slr_aware_flag=self.params.slr_aware_flag
             )
 
             # Reset the fence region checker operator
@@ -918,7 +947,7 @@ class Placer(nn.Module):
                 obj_and_grad_fn=self.model.obj_and_grad_fn,
                 constraint_fn=self.op_cls.move_boundary_op,
             )
-            self.reset_fence_region_cost_parameters()
+            self.reset_fence_region_cost_parameters(sll_flag)
             # self.update_gamma(opt_iter, metrics[-1].overflow)
             # self.reset_lambdas(self.params.reset_lambda_param)
             # self.reset_step_size()
@@ -1011,7 +1040,7 @@ class Placer(nn.Module):
             logger.warning("Value EError: {0}".format(e))
             return False
 
-    def io_legalization(self, opt_iter):
+    def io_legalization(self, opt_iter, sll_flag=False):
         logger.info("Start IO Legalization...")
         self.num_io_legalization += 1
         # self.plot(os.path.join(self.params.plot_dir, "iter%s_before_io_rough_legalizaion.bmp" % ('{:04}'.format(opt_iter.iteration))),
@@ -1027,7 +1056,7 @@ class Placer(nn.Module):
             ] = 1
             self.data_cls.area_type_lock_mask[io_at_id] = 1
         # reset optimizer
-        self.reset_optimizer(opt_iter)
+        self.reset_optimizer(opt_iter, sll_flag)
         # self.plot(os.path.join(self.params.plot_dir, "iter%s_after_io_rough_legalizaion.bmp" % ('{:04}'.format(opt_iter.iteration))),
         #             opt_iter, plot_target_at_names=self.params.plot_target_at_names, filler_flag=True)
         self.num_io_legalization += 1
@@ -1304,13 +1333,25 @@ class Placer(nn.Module):
         )
 
         # defining evaluation ops
-        eval_ops = {
-            # "wirelength": self.op_cls.wirelength_op,
-            # "density"   : self.op_cls.density_op,
-            # "objective": self.model.obj_fn,
-            "hpwl": self.op_cls.hpwl_op,
-            "overflow": self.op_cls.normalized_overflow_op,
-        }
+        if self.params.slr_aware_flag:
+            eval_ops = {
+                # "wirelength": self.op_cls.wirelength_op,
+                # "wasll": self.op_cls.wasll_op,
+                # "density"   : self.op_cls.density_op,
+                # "objective": self.model.obj_fn,
+                "hpwl": self.op_cls.hpwl_op,
+                "sll": self.op_cls.sll_op,
+                "overflow": self.op_cls.normalized_overflow_op,
+            }
+        else:
+            eval_ops = {
+                # "wirelength": self.op_cls.wirelength_op,
+                # "wasll": self.op_cls.wasll_op,
+                # "density"   : self.op_cls.density_op,
+                # "objective": self.model.obj_fn,
+                "hpwl": self.op_cls.hpwl_op,
+                "overflow": self.op_cls.normalized_overflow_op,
+            }
 
         # initial iteration
         # TODO: what is the meaning of 0,0,0,0
@@ -1354,6 +1395,9 @@ class Placer(nn.Module):
             self.eta_update_counter = 0
 
             tt = time.time()
+            if self.params.slr_aware_flag:
+                self.data_cls.sll_flag = True
+
             if self.params.load_global_place_init_file:
                 logger.info(
                     "load global placement initial file from {}".format(
@@ -1366,7 +1410,9 @@ class Placer(nn.Module):
                 # cur_metric = self.initialize_params(eval_ops, opt_iter, set_random_pos=False)
                 # eval_ops['fence_region'] = self.op_cls.fence_region_op
             else:
-                cur_metric = self.initialize_params(eval_ops, opt_iter)
+                cur_metric = self.initialize_params(eval_ops, opt_iter, sll_flag=self.data_cls.sll_flag)
+            
+            self.data_cls.sll_flag = False
 
             self.plot(
                 os.path.join(
@@ -1377,11 +1423,13 @@ class Placer(nn.Module):
                 plot_target_at_names=self.params.plot_target_at_names,
                 filler_flag=False,
             )
+            logger.info("<initial metric>: " + str(cur_metric))
+            metrics.append(cur_metric)
             # logger.info("<initial metric>: " + str(cur_metric))
             # metrics.append(cur_metric)
             # the state must be saved before setting learning rate
             self.optimizer_initial_state = copy.deepcopy(self.optimizer.state_dict())
-            self.initialize_learning_rate(self.model, self.optimizer, 0.1)
+            self.initialize_learning_rate(self.model, self.optimizer, 0.1, sll_flag=self.data_cls.sll_flag)
 
             # if self.params.load_global_place_init_file:
             #     # set this flag to trigger SSIR legalization routine.
@@ -1397,7 +1445,7 @@ class Placer(nn.Module):
                         for opt_iter.iter_lambda in range(self.params.lambda_iters):
                             for opt_iter.iter_sub in range(self.params.sub_iters):
                                 cur_metric = self.one_step(
-                                    self.optimizer, eval_ops, opt_iter
+                                    self.optimizer, eval_ops, opt_iter, self.data_cls.sll_flag
                                 )
                                 if (
                                     self.params.plot_flag
@@ -1441,7 +1489,13 @@ class Placer(nn.Module):
 
                                 opt_iter.iteration += 1
                                 metrics.append(cur_metric)
-                        self.update_lambdas(opt_iter)
+                                if self.cur_metric_record is None:
+                                    self.prev_metric_record = None
+                                else:
+                                    self.prev_metric_record = self.cur_metric_record
+                                self.cur_metric_record = cur_metric
+                        self.update_lambdas(opt_iter, self.cur_metric_record, self.prev_metric_record)
+
                     # adjust instance areas
                     if self._gp_adjust_area_condition(metrics[-1]) is True:
                         self.plot(
@@ -1457,7 +1511,7 @@ class Placer(nn.Module):
                             plot_target_at_names=self.params.plot_target_at_names,
                             filler_flag=True,
                         )
-                        self._gp_adjust_area(metrics[-1], opt_iter)
+                        self._gp_adjust_area(metrics[-1], opt_iter, self.data_cls.sll_flag)
                         self.last_area_inflation_iter = cur_metric.opt_iter.iteration
                         continue
 
@@ -1468,8 +1522,9 @@ class Placer(nn.Module):
                     # clock region constraints
                     if self._confine_clock_region_condition(metrics[-1]) is True:
                         self.metric_before_clk_assignment = metrics[-1]
-                        self.reset_optimizer(opt_iter)
-                        self._confine_clock_region(opt_iter, metrics)
+                        self.last_clock_assignment_iter = cur_metric.opt_iter.iteration                   
+                        self.reset_optimizer(opt_iter, self.data_cls.sll_flag)                        
+                        self._confine_clock_region(opt_iter, metrics, self.data_cls.sll_flag)
                         self.last_clock_assignment_iter = cur_metric.opt_iter.iteration
                         eval_ops["fence_region"] = self.op_cls.fence_region_op
                         # new_metric = self.initialize_params(
@@ -1501,7 +1556,7 @@ class Placer(nn.Module):
                             for opt_iter.iter_lambda in range(self.params.lambda_iters):
                                 for opt_iter.iter_sub in range(self.params.sub_iters):
                                     cur_metric = self.one_step(
-                                        self.optimizer, eval_ops, opt_iter
+                                        self.optimizer, eval_ops, opt_iter, self.data_cls.sll_flag
                                     )
                                     if (
                                         self.params.plot_flag
@@ -1523,7 +1578,12 @@ class Placer(nn.Module):
                                     metrics.append(cur_metric)
                                     if self.restore_best_solution_flag is False:
                                         self._save_best_solution(metrics, cur_metric)
-                            self.update_lambdas(opt_iter)
+                            if self.cur_metric_record is None:
+                                self.prev_metric_record = None
+                            else:
+                                self.prev_metric_record = self.cur_metric_record
+                            self.cur_metric_record = cur_metric
+                            self.update_lambdas(opt_iter, self.cur_metric_record, self.prev_metric_record)
                         self.update_gamma(opt_iter, metrics[-1].overflow)
                     # self._update_eta()
                     # if self._check_divergence(metrics) is True:
@@ -1535,7 +1595,7 @@ class Placer(nn.Module):
 
                 # lookahead legalization for IOs
                 if self.io_legalization_condition(opt_iter, metrics):
-                    self.io_legalization(opt_iter)
+                    self.io_legalization(opt_iter, self.data_cls.sll_flag)
                     continue
                 # if self.timing_weighting_condition(opt_iter, metrics):
                 #     self.timing_weighting(opt_iter)
@@ -1559,12 +1619,13 @@ class Placer(nn.Module):
                     self.op_cls.ssr_legalize_op.reset_honor_fence_region_constraints(
                         self.params.confine_clock_region_flag
                     )
+                    self.op_cls.ssr_legalize_op.reset_slr_aware_flag(self.params.slr_aware_flag)
                     if self.op_cls.ssr_abacus_legalize_op:
                         self.op_cls.ssr_abacus_legalize_op(self.data_cls.pos[0])
                     self.op_cls.ssr_legalize_op(self.data_cls.pos[0])
                     # lock the legalized instances for ssr_legalize_lock_iters
                     self.last_ssr_legalize_iter = opt_iter.iteration
-                    self.reset_optimizer(opt_iter)
+                    self.reset_optimizer(opt_iter, self.data_cls.sll_flag)
 
                     # need to apply the change of gradient to the optimizer
                     # with torch.no_grad():
@@ -1752,6 +1813,7 @@ class Placer(nn.Module):
                     self.op_cls.direct_lg_op.reset_clock_available_clock_region(
                         self.data_cls.clock_available_clock_region
                     )
+                self.op_cls.direct_lg_op.reset_slr_aware_flag(self.params.slr_aware_flag)
                 # legalize LUTs and FFs
                 if self.params.confine_clock_region_flag:
                     (
@@ -1848,6 +1910,7 @@ class Placer(nn.Module):
                 self.op_cls.ism_dp_op.reset_half_column_available_clock_region(
                     self.data_cls.half_column_available_clock_region
                 )
+                self.op_cls.ism_dp_op.reset_slr_aware_flag(self.params.slr_aware_flag)
             if self.params.io_legalization_flag:
                 chain_at_name = self.params.carry_chain_at_name
                 chain_at_id = self.placedb.getAreaTypeIndexFromName(chain_at_name)
@@ -1883,6 +1946,7 @@ class Placer(nn.Module):
             cur_metric = EvalMetric(self.params, copy.deepcopy(opt_iter))
             cur_metric.evaluate(self.data_cls, eval_ops, self.data_cls.pos[0])
             metrics.append(cur_metric)
+            logger.info(cur_metric)
             legality_check_done = False
             if not legality_check_done:
                 legal = self.op_cls.legality_check_op(self.data_cls.inst_locs_xyz)
@@ -1904,7 +1968,7 @@ class Placer(nn.Module):
         # return all metrics
         return metrics
 
-    def initialize_params(self, eval_ops, opt_iter, set_random_pos=True):
+    def initialize_params(self, eval_ops, opt_iter, set_random_pos=True, sll_flag=False):
         """@brief initialize nonlinear placement parameters"""
         pos = self.data_cls.pos[0]
 
@@ -1920,7 +1984,7 @@ class Placer(nn.Module):
         self.update_gamma(opt_iter, overflow)
 
         # initialize density weights
-        self.initialize_lambdas()
+        self.initialize_lambdas(sll_flag)
 
         # initialize step size
         self.initialize_step_size()
@@ -1938,12 +2002,14 @@ class Placer(nn.Module):
                 avg_at_grad_norm = at_grad.norm(dim=1).mean()
                 logger.info("at_type: %d, avg-norm: %g", at_type, avg_at_grad_norm)
 
-    def one_step(self, optimizer, eval_ops, opt_iter):
+    def one_step(self, optimizer, eval_ops, opt_iter, sll_flag=False):
         """@brief forward one step"""
         pos = self.data_cls.pos[0]
         cur_metric = EvalMetric(self.params, copy.deepcopy(opt_iter))
         cur_metric.gamma = self.data_cls.gamma.gamma.data
+        cur_metric.soft_floor_gamma = self.data_cls.soft_floor_gamma.gamma
         cur_metric.lambdas = self.data_cls.multiplier.lambdas.data
+        cur_metric.psi = self.data_cls.multiplier.psi
         cur_metric.step_size = self.data_cls.multiplier.t.item()
         if (
             self.num_confine_fence_region is not None
@@ -1957,7 +2023,7 @@ class Placer(nn.Module):
 
         # one descent step
         tt = time.time()
-        optimizer.step(cur_metric=cur_metric)
+        optimizer.step(cur_metric=cur_metric, sll_flag=sll_flag)
         logger.debug("optimizer step %.3f ms" % ((time.time() - tt) * 1000))
 
         cur_metric.evaluate(self.data_cls, eval_ops, pos)
@@ -2007,16 +2073,72 @@ class Placer(nn.Module):
                 (gamma * self.data_cls.gamma.weights).sum()
                 / self.data_cls.gamma.weights.sum()
             )
+            lut_area_type_id = self.placedb.getAreaTypeIndexFromName("LUT")
+            ff_area_type_id = self.placedb.getAreaTypeIndexFromName("FF")
+            # Check the instance area adjustment conditions
+            lut_overflow = overflow[lut_area_type_id].item()
+            ff_overflow = overflow[ff_area_type_id].item()
+            lut_ff_max_overflow = max(lut_overflow, ff_overflow)
 
+            if (
+                self.params.slr_aware_flag 
+                and lut_ff_max_overflow < self.data_cls.sll_start_overflow
+            ):            
+                self.data_cls.sll_flag = True
+                if(self.last_clock_assignment_iter is not None 
+                   and lut_ff_max_overflow < self.params.gp_adjust_area_overflow_threshold):
+                    self.data_cls.sll_flag = False
+              
+            soft_floor_gamma = self.data_cls.soft_floor_gamma.base * torch.pow(
+                    2, self.data_cls.soft_floor_gamma.k0 * overflow + self.data_cls.soft_floor_gamma.b0)
+            self.data_cls.soft_floor_gamma.gamma.data.fill_(
+                (soft_floor_gamma * self.data_cls.soft_floor_gamma.weights).sum() /
+                self.data_cls.soft_floor_gamma.weights.sum())
+            
     def _compute_relative_potential_energy(self, phi):
         """Compute the `"hat"` potential energy (phi).
-            `"hat"` follows the notation in `elfPlace` paper and means tne relative values compared with initial states.
+            `"hat"` follows the notation in `elfPlace` paper and means the relative values compared with initial states.
         :param phi: Potential energy vector.
         :return: Relative potential energy compared with initial potential energy.
         """
         phi_hat = self.op_cls.stable_zero_div_op(phi, self.data_cls.phi_0)
         return phi_hat
+    
+    def _compute_update_lambdas_withSll(self, phi, density_term_grad, wirelength_grad, sll_grad, lambda_param):
+        with torch.no_grad():
 
+            # Compute relative potential energy
+            phi_hat = self._compute_relative_potential_energy(phi)
+
+            # Get density gradient for each areas type
+            density_term_grad_1l_norm_array = torch.zeros_like(
+                phi, requires_grad=False)
+            for area_type in range(self.data_cls.num_area_types):
+                inst_ids = self.data_cls.area_type_inst_groups[area_type]
+                if len(inst_ids):
+                    density_term_grad_1l_norm_array[area_type] += density_term_grad.view([-1, 2])[inst_ids].norm(
+                        p=1)
+
+            # Compute the relative sub-gradient of density multiplier vector(lambda) w.r.t. instance position.
+            # See `Equation(20)` in `elfPlace` paper.
+            subgrad_hat = phi_hat + 0.5 * \
+                self.params.lambda_beta * phi_hat.pow(2)
+
+            # See `Equation(27)` in `elfPlace` paper.
+            wirelength_grad_l1_norm = wirelength_grad.norm(p=1)
+            sll_grad_l1_norm = sll_grad.norm(p=1)
+
+            # lambdas                                               
+            density_grad_dot_subgrad_hat = torch.dot(
+                density_term_grad_1l_norm_array, subgrad_hat)
+            coefficient = self.op_cls.stable_div_op(lambda_param * (wirelength_grad_l1_norm + 0.5 * self.data_cls.multiplier.psi * sll_grad_l1_norm),
+                                                    density_grad_dot_subgrad_hat)
+            new_lambdas = subgrad_hat.mul(coefficient)
+
+            new_psi = self.params.wlw_psi_reset
+
+            return new_lambdas, new_psi
+        
     def _compute_update_lambdas_method1(
         self, phi, density_term_grad, wirelength_grad, lambda_param
     ):
@@ -2076,8 +2198,8 @@ class Placer(nn.Module):
             )
             new_lambdas = subgrad_hat.mul(coefficient)
             return new_lambdas
-
-    def initialize_lambdas(self):
+        
+    def initialize_lambdas(self, sll_flag=False):
         """Compute initial density weight (lambda)"""
         pos = self.data_cls.pos[0]
 
@@ -2117,18 +2239,35 @@ class Placer(nn.Module):
         # Backup initial density term
         self.data_cls.density_0 = density.data.clone()
 
-        self.data_cls.multiplier.lambdas = self._compute_update_lambdas_method1(
-            phi=phi,
-            density_term_grad=density_grad,
-            wirelength_grad=wirelength_grad,
-            lambda_param=self.params.lambda_eta,
-        )
+        # Get sll gradient
+        if sll_flag:
+            wasll = self.op_cls.wasll_op(pos)
+            if pos.grad is not None:
+                pos.grad.zero_()
+            wasll.backward()
+            sll_grad = pos.grad.clone()
+            self.data_cls.multiplier.lambdas, self.data_cls.multiplier.psi = self._compute_update_lambdas_withSll(
+                phi=phi,
+                density_term_grad=density_grad,
+                wirelength_grad=wirelength_grad,
+                sll_grad=sll_grad,
+                lambda_param=self.params.lambda_eta
+            )
+        else:
+            self.data_cls.multiplier.lambdas = self._compute_update_lambdas_method1(
+                phi=phi,
+                density_term_grad=density_grad,
+                wirelength_grad=wirelength_grad,
+                lambda_param=self.params.lambda_eta,
+            )
+
+        self.data_cls.multiplier.velocity = torch.zeros_like(self.data_cls.multiplier.lambdas)
 
         logger.info(
-            "initial lambdas = %s" % (array2str(self.data_cls.multiplier.lambdas))
+            "initial lambdas = %s, psi = %s" % (array2str(self.data_cls.multiplier.lambdas), self.data_cls.multiplier.psi)
         )
 
-    def reset_lambdas(self, lambda_param):
+    def reset_lambdas(self, lambda_param, sll_flag=False):
         """Reset the multipliers vector right after area adjustment.
         Redirect lambda to its current normalized sub-gradient with the scale determined by the gradient norm ratio
         between wire-length and electric density. Derived the `Equation(27)` in `elfPlace` paper.
@@ -2156,18 +2295,36 @@ class Placer(nn.Module):
         density_term.backward()
         density_term_grad = pos.grad.clone()
 
-        self.data_cls.multiplier.lambdas = self._compute_update_lambdas_method1(
-            phi=phi,
-            density_term_grad=density_term_grad,
-            wirelength_grad=wirelength_grad,
-            lambda_param=lambda_param,
-        )
+        # Get sll gradient and init/reset_lambdas 
+        if sll_flag:
+            wasll = self.op_cls.wasll_op(pos)
+            if pos.grad is not None:
+                pos.grad.zero_()
+            wasll.backward()
+            sll_grad = pos.grad.clone()
+            self.data_cls.multiplier.lambdas, self.data_cls.multiplier.psi = self._compute_update_lambdas_withSll(
+                phi=phi,
+                density_term_grad=density_term_grad,
+                wirelength_grad=wirelength_grad,
+                sll_grad=sll_grad,
+                lambda_param=lambda_param
+            )            
+        else:
+            self.data_cls.multiplier.lambdas = self._compute_update_lambdas_method1(
+                phi=phi,
+                density_term_grad=density_term_grad,
+                wirelength_grad=wirelength_grad,
+                lambda_param=lambda_param,
+            )
 
-        logger.info(
-            "Reset lambdas = %s" % (array2str(self.data_cls.multiplier.lambdas))
-        )
+        self.data_cls.multiplier.velocity = torch.zeros_like(self.data_cls.multiplier.lambdas)            
+        self.cur_metric_record  = None
+        self.prev_metric_record = None
+        
+        logger.info("Reset lambdas = %s psi = %s" %
+                    (array2str(self.data_cls.multiplier.lambdas), self.data_cls.multiplier.psi))
 
-    def reset_fence_region_cost_parameters(self):
+    def reset_fence_region_cost_parameters(self, sll_flag=False):
         pos = self.data_cls.pos[0]
 
         # Compute wirelength
@@ -2191,6 +2348,16 @@ class Placer(nn.Module):
             pos.grad.zero_()
         density.backward()
         density_grad = pos.grad.clone()
+
+        # Get sll gradient
+        if sll_flag:
+            wasll = self.data_cls.multiplier.psi * self.op_cls.wasll_op(pos)
+            if pos.grad is not None:
+                pos.grad.zero_()
+            wasll.backward()
+            sll_grad = pos.grad.clone()
+        else:
+            sll_grad = None
 
         # Compute fence region cost. Note that fence region cost only makes senses to movable instances.
         movable_pos = pos[
@@ -2217,10 +2384,12 @@ class Placer(nn.Module):
         # Update clock region cost multipliers
         self.data_cls.fence_region_cost_parameters.eta = self._compute_initial_eta(
             wirelength_grad=wirelength_grad,
+            sll_grad=sll_grad,
             density_grad=density_grad,
             fence_region_cost_grad=fence_region_cost_grad,
             eta_scale=self.params.confine_fence_region_eta_scale,
             eta_offset=self.params.confine_fence_region_eta_offset,
+            sll_flag=sll_flag
         )
 
     def _reset_eta(self):
@@ -2248,6 +2417,13 @@ class Placer(nn.Module):
         density.backward()
         density_grad = pos.grad.clone()
 
+        # Get sll gradient
+        wasll = self.data_cls.multiplier.psi * self.op_cls.wasll_op(pos)
+        if pos.grad is not None:
+            pos.grad.zero_()
+        wasll.backward()
+        sll_grad = pos.grad.clone()
+
         # Compute fence region cost. Note that fence region cost only makes senses to movable instances.
         movable_pos = pos[
             self.data_cls.movable_range[0] : self.data_cls.movable_range[1]
@@ -2266,15 +2442,18 @@ class Placer(nn.Module):
         self.data_cls.fence_region_cost_parameters.eta = self._compute_initial_eta(
             wirelength_grad=wirelength_grad,
             density_grad=density_grad,
+            sll_grad=sll_grad,
             fence_region_cost_grad=fence_region_cost_grad,
             eta_scale=self.params.confine_fence_region_eta_scale,
             eta_offset=self.params.confine_fence_region_eta_offset,
+            sll_flag=False
         )
 
     def _update_eta(self):
         with torch.no_grad():
             temp = self.op_cls.stable_div_op(
-                self.data_cls.fence_region_cost.norm(p=1), self.data_cls.wirelength
+                self.data_cls.fence_region_cost.norm(p=1), 
+                self.data_cls.wirelength + self.data_cls.wasll
             )
             rate = (
                 0
@@ -2291,18 +2470,25 @@ class Placer(nn.Module):
     def _compute_initial_eta(
         self,
         wirelength_grad,
+        sll_grad,
         density_grad,
         fence_region_cost_grad,
         eta_scale,
         eta_offset,
+        sll_flag=False
     ):
         wirelength_grad_l2_norm = wirelength_grad.norm(p=2)
         density_grad_l2_norm = density_grad.norm(p=2)
         fence_region_cost_grad_l2_norm = fence_region_cost_grad.norm(p=2)
-        return self.op_cls.stable_div_op(
-            eta_scale * wirelength_grad_l2_norm,
-            fence_region_cost_grad_l2_norm + eta_offset,
-        )
+        if sll_flag:
+            sll_grad_l2_norm = sll_grad.norm(p=2) 
+            return self.op_cls.stable_div_op(
+                eta_scale * (wirelength_grad_l2_norm + 0.5 * sll_grad_l2_norm),
+                fence_region_cost_grad_l2_norm + eta_offset)
+        else:
+            return self.op_cls.stable_div_op(
+                eta_scale * (wirelength_grad_l2_norm),
+                fence_region_cost_grad_l2_norm + eta_offset) 
 
     def initialize_step_size(self):
         self.data_cls.multiplier.t = (
@@ -2319,7 +2505,7 @@ class Placer(nn.Module):
         ) * self.data_cls.multiplier.lambdas.norm(p=2)
         logger.info("Reset step size = %g" % self.data_cls.multiplier.t.item())
 
-    def update_lambdas(self, opt_iter):
+    def update_lambdas(self, opt_iter, cur_metric, prev_metric):
         """Update density weight (lambda) with sub-gradient method"""
         with torch.no_grad():
             phi = self.data_cls.phi
@@ -2339,7 +2525,7 @@ class Placer(nn.Module):
 
             if self.last_clock_assignment_iter is not None:
                 lambdas_upper_bounds = self.op_cls.stable_zero_div_op(
-                    1.0, self.data_cls.multiplier.gd_gw_norm_ratio
+                    1.0, self.data_cls.multiplier.gd_gw_gs_norm_ratio
                 )
                 self.data_cls.multiplier.lambdas = torch.min(
                     self.data_cls.multiplier.lambdas, lambdas_upper_bounds * 1e3
@@ -2355,8 +2541,36 @@ class Placer(nn.Module):
             )
             # rate = self.params.lambda_alpha_low
             self.data_cls.multiplier.t *= rate
+            
+            # Refer to Section IV-C "Adaptive Wirelength-Weighting-Factor Adjusting" method in `LEAPS` paper
+            # DOI: 10.1109/TCSI.2023.3340554
+            if (self.data_cls.sll_flag 
+                and prev_metric is not None
+            ):
+                delta_sll = cur_metric.sll - prev_metric.sll
 
-    def initialize_learning_rate(self, model, optimizer, lr):
+                # Update the Exponential Moving Average (EMA) for delta_sll to smooth out fluctuations
+                self.delta_sll_ema = (self.delta_sll_ema_alpha * delta_sll.item()
+                                    + (1 - self.delta_sll_ema_alpha) * self.delta_sll_ema)
+
+                # Use Adam optimizer for dynamically updating the 'psi' parameter
+                grad_psi = self.delta_sll_ema
+                self.data_cls.multiplier.psi_m = (self.data_cls.multiplier.psi_beta1 * self.data_cls.multiplier.psi_m
+                                                + (1 - self.data_cls.multiplier.psi_beta1) * grad_psi)
+                self.data_cls.multiplier.psi_v = (self.data_cls.multiplier.psi_beta2 * self.data_cls.multiplier.psi_v
+                                                + (1 - self.data_cls.multiplier.psi_beta2) * grad_psi * grad_psi)
+
+                # Calculate first- and second-moment estimates for the Adam optimizer
+                m_hat = self.data_cls.multiplier.psi_m / (1 - self.data_cls.multiplier.psi_beta1)
+                v_hat = self.data_cls.multiplier.psi_v / (1 - self.data_cls.multiplier.psi_beta2)
+
+                # Adjust the 'psi' parameter based on the Adam optimizer's moment estimates
+                new_psi = self.data_cls.multiplier.psi + math.pow(self.params.wlw_step_rate, abs(delta_sll.item())) * m_hat / (np.sqrt(v_hat) + self.data_cls.multiplier.psi_epsilon)
+                
+                if new_psi < 1e3:
+                    self.data_cls.multiplier.psi = max(0, new_psi)
+
+    def initialize_learning_rate(self, model, optimizer, lr, sll_flag=False):
         """
         @brief Estimate initial learning rate by moving a small step.
         Computed as | x_k - x_k_1 |_2 / | g_k - g_k_1 |_2.
@@ -2364,9 +2578,9 @@ class Placer(nn.Module):
         @param lr small step
         """
         x_k = self.data_cls.pos[0]
-        obj_k, g_k, grad_dicts = model.obj_and_grad_fn(x_k)
+        obj_k, g_k, grad_dicts = model.obj_and_grad_fn(x_k, sll_flag)
         x_k_1 = torch.autograd.Variable(x_k - lr * g_k, requires_grad=True)
-        obj_k_1, g_k_1, grad_dicts = model.obj_and_grad_fn(x_k_1)
+        obj_k_1, g_k_1, grad_dicts = model.obj_and_grad_fn(x_k_1, sll_flag)
 
         learning_rate = (x_k - x_k_1).norm(p=2) / (g_k - g_k_1).norm(p=2)
         # update learning rate

@@ -120,6 +120,8 @@ void bind_database(py::module &m) {
            ClockRegion
            ClockRegionMap
            HalfColumnRegion
+           SuperLogicRegion
+           SuperLogicRegionMap
            ShapeConstr
            ShapeConstr::ShapeElement
            Layout
@@ -670,6 +672,8 @@ void bind_database(py::module &m) {
           .def("readVerilog", (void(Database::*)(std::string const &)) & Database::readVerilog)
           .def("readFlexshelf", (void(Database::*)(std::string const &, std::string const &, std::string const &)) &
                                         Database::readFlexshelf)
+          .def("readFlexshelfForMultiDie", (void(Database::*)(std::string const &, std::string const &, std::string const &)) &
+                                        Database::readFlexshelfForMultiDie)
           .def("readFlexshelfLayout", (void(Database::*)(std::string const &)) & Database::readFlexshelfLayout)
           .def("readFlexshelfDesign",
                   (void(Database::*)(std::string const &, std::string const &)) & Database::readFlexshelfDesign)
@@ -777,7 +781,7 @@ void bind_database(py::module &m) {
           .def("instToClocksCP", (std::vector<std::vector<IndexType>>(PlaceDB::*)()) & PlaceDB::instToClocksCP)
           .def("clockRegionMapSize", &PlaceDB::clockRegionMapSize)
           .def("numClockNets", (IndexType(PlaceDB::*)()) & PlaceDB::numClockNets)
-          .def("numHalfColumnRegions", (IndexType(PlaceDB::*)()) & PlaceDB::numHalfColumnRegions)
+          .def("numHalfColumnRegions", (IndexType(PlaceDB::*)()) &PlaceDB::numHalfColumnRegions)
           .def("resourceCategory", (uint8_t(PlaceDB::*)(IndexType)) & PlaceDB::resourceCategory)
           .def("xyToCrIndex",
                   (IndexType(PlaceDB::*)(const PlaceDB::CoordinateType &, const PlaceDB::CoordinateType &)) &
@@ -845,6 +849,10 @@ void bind_database(py::module &m) {
           .def("siteMapDim", &PlaceDB::siteMapDim)
           .def("siteBBox", (PlaceDB::BoxType(PlaceDB::*)(IndexType, IndexType)) & PlaceDB::siteBBox)
           .def("chainInsts", &PlaceDB::chainInsts, py::return_value_policy::reference_internal)
+          .def("numSlrX", &PlaceDB::numSlrX)
+          .def("numSlrY", &PlaceDB::numSlrY)
+          .def("slrWidth", &PlaceDB::slrWidth)
+          .def("slrHeight", &PlaceDB::slrHeight)
           .def("apply",
                   [](PlaceDB &rhs, py::list locs_xyz) {
                     // locs_xyz must be flat

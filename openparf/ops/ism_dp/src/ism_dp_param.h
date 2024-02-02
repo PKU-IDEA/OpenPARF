@@ -41,8 +41,9 @@ struct ISMDetailedPlaceParam {
   double   yWirelenWt;                 ///< weight for wirelength in y direction
   int32_t  verbose;                    ///< Verbose flag
   bool     honorClockConstraints;      ///< Whether honor clock region constraints.
-  uint8_t *fixedMask;   ///< Besides SSMIR instances like IOs, instances marked fixed will not be moved during detailed
-                        ///< placement. Ensure that this will not affect other instances.
+  bool     slrAwareFlag;               ///< Whether consider multi-die architecture
+  uint8_t *fixedMask;                  ///< Besides SSMIR instances like IOs, instances marked fixed will not be moved during detailed
+                                       ///< placement. Ensure that this will not affect other instances.
 };
 
 }   // namespace ism_dp

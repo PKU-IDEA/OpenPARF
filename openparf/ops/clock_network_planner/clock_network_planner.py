@@ -62,6 +62,9 @@ class ClockNetworkPlanner:
                 local_pos,
                 t)
 
+    def reset_slr_aware_flag(self, slr_aware_flag: bool):
+        self.param.slrAwareFlag = slr_aware_flag
+
     def __call__(self, pos):
         return self.forward(pos)
 

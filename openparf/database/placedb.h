@@ -667,15 +667,23 @@ class PlaceDB {
 
   IndexType                   XyToHcIndex(const CoordinateType &x, const CoordinateType &y) const;
 
-  IndexType                   numCrX() const {
-                      auto const &layout = db_->layout();
-                      return layout.clockRegionMap().width();
+  std::vector<int32_t>        XyToSlrIndex(const int32_t &x, const int32_t &y) const;
+
+  IndexType                   CrXyToSlrIndex(const int32_t &crX, const int32_t &crY) const;
+
+  IndexType                   CrIndexToSlrIndex(const IndexType &crIdx) const;
+
+  IndexType numCrX() const {
+    auto const &layout = db_->layout();
+    return layout.clockRegionMap().width();
   }
+
   IndexType numCrY() const {
     auto const &layout = db_->layout();
     return layout.clockRegionMap().height();
   }
-  IndexType                                                numCr() const { return numCrX() * numCrY(); }
+
+  IndexType numCr() const { return numCrX() * numCrY(); }
 
   std::pair<IndexType, IndexType>                          clockRegionMapSize() const;
 
@@ -691,6 +699,29 @@ class PlaceDB {
 
   // =============================================
   // [  END] <<<<<<<< CarryChain Attribute <<<<<<<
+  // =============================================
+
+  // =============================================
+  // [BEGIN ] >>>>>>> Multi-Die Attribute >>>>>>>
+  // =============================================
+  IndexType numSlrX() const {
+    auto const &layout = db_->layout();
+    return layout.superLogicRegionMap().width();
+  }
+
+  IndexType numSlrY() const {
+    auto const &layout = db_->layout();
+    return layout.superLogicRegionMap().height();
+  }
+
+  IndexType numSlr() const { return numSlrX() * numSlrY(); }
+
+  IndexType slrWidth() const { return db_->layout().superLogicRegionMap().at(0).width(); }
+
+  IndexType slrHeight() const { return db_->layout().superLogicRegionMap().at(0).height(); }
+
+  // =============================================
+  // [  END] <<<<<<<< Multi-Die Attribute <<<<<<<
   // =============================================
 
   /// @brief apply placement solution
@@ -737,6 +768,8 @@ class PlaceDB {
   /// @brief init clock related data structures. net to clock mappings, clock region
   /// mapping, etc.
   void                                              initClock();
+  /// @brief Check if fixed instances are placed on compatible site resource types.
+  void                                              checkFixedInstToSiteRrscTypeCompatibility() const;
 
 
   container::ObserverPtr<Database>                  db_;             ///< bind database
@@ -753,6 +786,7 @@ class PlaceDB {
   std::vector<SizeType>                             inst_sizes_;   ///< instance sizes, # of instances x # of area types
   std::vector<PlaceStatus>                          inst_place_status_;   ///< placement status
   std::vector<Point3DType>                          inst_locs_;           ///< instance locations
+  std::vector<std::set<IndexType>>                  inst_neighbors_;      ///< instance neighbors
 
   /// pin attributes
   std::vector<Point2DType>                          pin_offsets_;          ///< offset of pins to inst origin

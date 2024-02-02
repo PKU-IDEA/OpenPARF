@@ -14,6 +14,7 @@ void Layout::copy(Layout const &rhs) {
   this->BaseType::copy(rhs);
   site_map_ = rhs.site_map_;
   clock_region_map_ = rhs.clock_region_map_;
+  super_logic_region_map_ = rhs.super_logic_region_map_;
   half_column_regions_ = rhs.half_column_regions_;
   site_type_map_ = rhs.site_type_map_;
   resource_map_ = rhs.resource_map_;
@@ -24,6 +25,7 @@ void Layout::move(Layout &&rhs) {
   this->BaseType::move(std::move(rhs));
   site_map_ = std::move(site_map_);
   clock_region_map_ = std::move(rhs.clock_region_map_);
+  super_logic_region_map_ = std::move(rhs.super_logic_region_map_);
   half_column_regions_ = std::move(rhs.half_column_regions_);
   site_type_map_ = std::move(rhs.site_type_map_);
   resource_map_ = std::move(rhs.resource_map_);
@@ -48,19 +50,17 @@ Layout::addHalfColumnRegion(Layout::IndexType clock_region_id) {
 }
 
 Layout::IndexType Layout::memory() const {
-  return this->BaseType::memory() + site_map_.memory() +
-         clock_region_map_.memory() +
-         half_column_regions_.capacity() *
-             sizeof(decltype(half_column_regions_)::value_type) +
-         resource_map_.memory() + sizeof(num_sites_);
+  return this->BaseType::memory() + site_map_.memory() + clock_region_map_.memory() + super_logic_region_map_.memory() +
+         half_column_regions_.capacity() * sizeof(decltype(half_column_regions_)::value_type) + resource_map_.memory() +
+         sizeof(num_sites_);
 }
 
 std::ostream &operator<<(std::ostream &os, Layout const &rhs) {
   os << className<decltype(rhs)>() << "("
      << "id_ : " << rhs.id_ << ", \nsite_map_ : " << rhs.site_map_
      << ", \nclock_region_map_ : " << rhs.clock_region_map_
-     << ", \nhalf_column_regions_ : " << rhs.half_column_regions_
-     << ", \nsite_type_map_ : " << rhs.site_type_map_
+     << ", \nsuper_logic_region_map_: " << rhs.super_logic_region_map_
+     << ", \nhalf_column_regions_ : " << rhs.half_column_regions_ << ", \nsite_type_map_ : " << rhs.site_type_map_
      << ", \nresource_map_ : " << rhs.resource_map_ << ", \nnum_sites_ : (";
   const char *delimiter = "";
   for (auto v : rhs.num_sites_) {

@@ -56,6 +56,10 @@ public:
     static IndexType              cnpMinCostFlowNodeAssignNumNearestClockRegionInit;           // The initial number of clock regions being considered for each node set during MCF-based assignment
     static IndexType              cnpMinCostFlowNodeAssignNumNearestClockRegionIncr;           // The number of clock regions increased each time for each node set during MCF-based assignment
 
+    // Parameters for multi-die architecture
+    static IndexType              cnpSuperLongLineImporvMaxNetDegree;                          // The maximum net degree for super long line improvement
+    static RealType               weightBetweenDistanceAndSllIncrease;                         // The weight for balancing XY distance and potential Sll Increase
+    static bool                   slrAwareFlag;
 private:
     // Disable creating instances of this class
     Parameters() {}

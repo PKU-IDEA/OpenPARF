@@ -78,6 +78,7 @@ class ISMDetailedPlace:
         self.param.pinUtilBinW = 1.0
         self.param.pinUtilBinH = 1.0
         self.param.honorClockConstraints = honor_clock_constraints
+        self.param.slrAwareFlag = False
         self.clock_available_clock_region = None
         self.fixed_mask = None
 
@@ -91,6 +92,9 @@ class ISMDetailedPlace:
 
     def reset_honor_clock_constraints(self, honor_clock_constraints: bool):
         self.param.honorClockConstraints = honor_clock_constraints
+
+    def reset_slr_aware_flag(self, v: bool):
+        self.param.slrAwareFlag = v
 
     def forward(self, pos):
         if pos.is_cuda:

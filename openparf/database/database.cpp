@@ -28,7 +28,8 @@ namespace database {
 /// @brief A callback class to read bookshelf format
 class BookshelfDatabaseCallbacks : public bookshelfparser::BookshelfDatabase {
  public:
-  using IndexType = Object::IndexType;
+  using IndexType         = Object::IndexType;
+  using CoordinateType    = Object::CoordinateType;
 
   /// @brief constructor
   BookshelfDatabaseCallbacks(Database &db) : db_(db) {}
@@ -184,6 +185,9 @@ class BookshelfDatabaseCallbacks : public bookshelfparser::BookshelfDatabase {
   }
 
   void initClockRegionsCbk(unsigned width, unsigned height) { db_.layout().clockRegionMap().reshape(width, height); }
+
+  void initSuperLogicRegionsCbk(unsigned width, unsigned height) { db_.layout().superLogicRegionMap().reshape(width, height); }
+
   /// @brief add clock region.
   /// We assume the site width/height is 1, so the site indices are the same as
   /// coordindates.
@@ -191,22 +195,20 @@ class BookshelfDatabaseCallbacks : public bookshelfparser::BookshelfDatabase {
   /// in this clock region
   /// @param hc_ymid The y boundary for upper/lower half-column regions
   void addClockRegionCbk(std::string const &name,
-          unsigned                          xl,
-          unsigned                          yl,
-          unsigned                          xh,
-          unsigned                          yh,
-          unsigned                          hc_ymid,
-          unsigned                          hc_xmin) {
+                         unsigned           xl,
+                         unsigned           yl,
+                         unsigned           xh,
+                         unsigned           yh,
+                         unsigned           hc_ymid,
+                         unsigned           hc_xmin) {
     openparfAssert(name.length() == 4 && name.substr(0, 1) == "X" && name.substr(2, 1) == "Y");
-    using IndexType           = Object::IndexType;
-    using CoordinateType      = Object::CoordinateType;
 
     IndexType clock_region_ix = std::stoi(name.substr(1, 1));
     IndexType clock_region_iy = std::stoi(name.substr(3, 1));
     auto     &clock_region    = db_.layout().clockRegionMap().at(clock_region_ix, clock_region_iy);
     openparfAssert(clock_region.id() == clock_region_ix * db_.layout().clockRegionMap().height() + clock_region_iy);
     clock_region.setName(name);
-    clock_region.setBbox({(CoordinateType) xl, (CoordinateType) yl, (CoordinateType) xh, (CoordinateType) yh});
+    clock_region.setBbox({(CoordinateType)xl, (CoordinateType)yl, (CoordinateType)xh, (CoordinateType)yh});
     clock_region.resizeNumSites(db_.layout().siteTypeMap().numSiteTypes());
 
     // set the clock region id in sites
@@ -225,8 +227,8 @@ class BookshelfDatabaseCallbacks : public bookshelfparser::BookshelfDatabase {
     // the _hcArray
     IndexType                                    hc_xmax = hc_xmin;
     std::array<std::array<CoordinateType, 2>, 2> y_ranges{};
-    y_ranges[0] = {(CoordinateType) yl, (CoordinateType) hc_ymid - 1};
-    y_ranges[1] = {(CoordinateType) hc_ymid, (CoordinateType) yh};
+    y_ranges[0] = {(CoordinateType)yl, (CoordinateType)hc_ymid - 1};
+    y_ranges[1] = {(CoordinateType)hc_ymid, (CoordinateType)yh};
     for (IndexType hc_xl = hc_xmin; hc_xl <= xh; hc_xl += db_.params().arch_half_column_region_width_) {
       auto hc_xh = std::min(hc_xl + db_.params().arch_half_column_region_width_ - 1, xh);
       hc_xmax    = hc_xh;
@@ -235,7 +237,7 @@ class BookshelfDatabaseCallbacks : public bookshelfparser::BookshelfDatabase {
         auto &hc = db_.layout().addHalfColumnRegion(clock_region.id());
         openparfAssert(hc.clockRegionId() == clock_region.id());
         openparfAssert(hc.id() == db_.layout().numHalfColumnRegions() - 1);
-        hc.setBbox({(CoordinateType) hc_xl, hc_yl, (CoordinateType) hc_xh, hc_yh});
+        hc.setBbox({(CoordinateType)hc_xl, hc_yl, (CoordinateType)hc_xh, hc_yh});
         // set half column region id in sites
         foreach2D<CoordinateType>(hc_xl, hc_yl, hc_xh, hc_yh, [&](IndexType ix, IndexType iy) {
           auto site_proxy = db_.layout().siteMap().at(ix, iy);
@@ -248,6 +250,124 @@ class BookshelfDatabaseCallbacks : public bookshelfparser::BookshelfDatabase {
     }
     clock_region.setHcXMin(hc_xmin);
     clock_region.setHcXMax(hc_xmax);
+  }
+
+  /// @brief Add a clock region for multi-die FPGA architecture.
+  /// @param hc_ymid The y boundary for upper/lower half-column regions
+  /// @param hc_xmin The left-most x boundary for the first half-column region
+  /// in this clock region
+  /// @param slr_crX The number of CRs in the SLR along the X-axis.
+  /// @param slr_crY The number of CRs in the SLR along the Y-axis.
+  void addClockRegionForMultiDieCbk(std::string const &name,
+                                    unsigned           xl,
+                                    unsigned           yl,
+                                    unsigned           xh,
+                                    unsigned           yh,
+                                    unsigned           hc_ymid,
+                                    unsigned           hc_xmin,
+                                    unsigned           slr_crX,
+                                    unsigned           slr_crY) {
+    // SLR_X<SLR_IDX>Y<SLR_IDY>.X<CR_IDX>Y<CR_IDY>
+    // TODO(Runzhe Tao, rztao@my.swjtu.edu.cn): Expand the logic to handle cases where the total count of SLRs exceeds 9.
+    IndexType slr_ix          = std::stoi(name.substr(5, 1));
+    IndexType slr_iy          = std::stoi(name.substr(7, 1));
+    IndexType clock_region_ix = std::stoi(name.substr(10, 1)) + slr_crX * slr_ix;
+    IndexType clock_region_iy = std::stoi(name.substr(12, 1)) + slr_crY * slr_iy;
+    auto     &clock_region    = db_.layout().clockRegionMap().at(clock_region_ix, clock_region_iy);
+    openparfAssert(clock_region.id() == clock_region_ix * db_.layout().clockRegionMap().height() + clock_region_iy);
+    clock_region.setName(name);
+    clock_region.setBbox({(CoordinateType)xl, (CoordinateType)yl, (CoordinateType)xh, (CoordinateType)yh});
+    clock_region.resizeNumSites(db_.layout().siteTypeMap().numSiteTypes());
+    clock_region.setHcXMin(hc_xmin);
+    clock_region.setHcYMid(hc_ymid);
+
+    // set the clock region id in sites
+    foreach2D(xl, yl, xh + 1, yh + 1, [&](IndexType ix, IndexType iy) {
+      auto site_proxy = db_.layout().siteMap().at(ix, iy);
+      if (site_proxy) {
+        auto &site = *site_proxy;
+        site.setClockRegionId(clock_region.id());
+        clock_region.incrNumSites(site.siteTypeId(), 1);
+      }
+    });
+  }
+
+  /// @brief Add half-column regions within a specified clock region.
+  void addHalfColumnRegionForMultiDieCbk(unsigned crX,
+                                         unsigned crY) {
+    openparfAssert(0 <= crX && crX < db_.layout().clockRegionMap().width());
+    openparfAssert(0 <= crY && crY < db_.layout().clockRegionMap().height());
+    auto    &clock_region = db_.layout().clockRegionMap().at(crX, crY);
+    unsigned xl           = clock_region.bbox().xl();
+    unsigned xh           = clock_region.bbox().xh();
+    unsigned yl           = clock_region.bbox().yl();
+    unsigned yh           = clock_region.bbox().yh();
+    unsigned hc_xmin      = clock_region.HcXMin();
+    unsigned hc_ymid      = clock_region.HcYMid();
+    // add half column regions in the clock region
+    // Iterate through all half-column regions in y-major order
+    // So that each two half-column regions in the same columns are adjacent in
+    // the _hcArray
+    IndexType                                    hc_xmax = hc_xmin;
+    std::array<std::array<CoordinateType, 2>, 2> y_ranges{};
+    y_ranges[0] = {(CoordinateType)yl, (CoordinateType)hc_ymid - 1};
+    y_ranges[1] = {(CoordinateType)hc_ymid, (CoordinateType)yh};
+    for (IndexType hc_xl = hc_xmin; hc_xl <= xh; hc_xl += db_.params().arch_half_column_region_width_) {
+      auto hc_xh = std::min(hc_xl + db_.params().arch_half_column_region_width_ - 1, xh);
+      hc_xmax    = hc_xh;
+      for (auto const &y_range : y_ranges) {
+        auto  hc_yl = y_range[0], hc_yh = y_range[1];
+        auto &hc = db_.layout().addHalfColumnRegion(clock_region.id());
+        openparfAssert(hc.clockRegionId() == clock_region.id());
+        openparfAssert(hc.id() == db_.layout().numHalfColumnRegions() - 1);
+        hc.setBbox({(CoordinateType)hc_xl, hc_yl, (CoordinateType)hc_xh, hc_yh});
+        // set half column region id in sites
+        foreach2D<CoordinateType>(hc_xl, hc_yl, hc_xh, hc_yh, [&](IndexType ix, IndexType iy) {
+          auto site_proxy = db_.layout().siteMap().at(ix, iy);
+          if (site_proxy) {
+            auto &site = *site_proxy;
+            site.setHalfColumnRegionId(hc.id());
+          }
+        });
+      }
+    }
+    clock_region.setHcXMax(hc_xmax);
+  }
+
+  /// @brief Add a super logic region for multi-die FPGA architecture
+  void addSuperLogicRegionCbk(std::string const &name,
+                              std::string const &type,
+                              unsigned           slr_ix,
+                              unsigned           slr_iy,
+                              unsigned           slr_width,
+                              unsigned           slr_height) {
+    using BoxType = geometry::Box<int32_t>;
+
+    auto   &super_logic_region = db_.layout().superLogicRegionMap().at(slr_ix, slr_iy);
+    int32_t slr_offsetX = 0, slr_offsetY = 0;
+    if (slr_ix > 0) {
+      slr_offsetX = db_.layout().superLogicRegionMap().at(slr_ix - 1, slr_iy).bbox().xh();
+      openparfAssert(slr_height == db_.layout().superLogicRegionMap().at(slr_ix - 1, slr_iy).height());
+    }
+
+    if (slr_iy > 0) {
+      slr_offsetY = db_.layout().superLogicRegionMap().at(slr_ix, slr_iy - 1).bbox().yh();
+      openparfAssert(slr_width == db_.layout().superLogicRegionMap().at(slr_ix, slr_iy - 1).width());
+    }
+
+    BoxType bbox({slr_offsetX,
+                  slr_offsetY,
+                  static_cast<int32_t>(slr_offsetX + slr_width),
+                  static_cast<int32_t>(slr_offsetY + slr_height)});
+    super_logic_region.setName(name);
+    super_logic_region.setType(type);
+    super_logic_region.setIdx(slr_ix);
+    super_logic_region.setIdy(slr_iy);
+    super_logic_region.setWidth(slr_width);
+    super_logic_region.setHeight(slr_height);
+    super_logic_region.setBbox(bbox);
+
+    // openparfPrint(kDebug, "name:%s, type:%s, slr_ix:%d, slr_iy:%d, slr_width:%d, slr_height:%d, xl:%d, xh:%d, yl:%d, yh:%d\n", name.c_str(), type.c_str(), slr_ix, slr_iy, slr_width, slr_height, bbox.xl(), bbox.xh(), bbox.yl(), bbox.yh());
   }
 
   /// @brief add clock region without half column
@@ -826,9 +946,16 @@ bool Database::writeBookshelfNets(std::string const &nets_file) {
 }
 
 void Database::readFlexshelf(std::string const &layout_file,
-        std::string const                      &netlist_file,
-        std::string const                      &place_file) {
+                             std::string const &netlist_file,
+                             std::string const &place_file) {
   readFlexshelfLayout(layout_file);
+  readFlexshelfDesign(netlist_file, place_file);
+}
+
+void Database::readFlexshelfForMultiDie(std::string const &layout_file,
+                                        std::string const &netlist_file,
+                                        std::string const &place_file) {
+  readFlexshelfLayoutForMultiDie(layout_file);
   readFlexshelfDesign(netlist_file, place_file);
 }
 
@@ -1023,6 +1150,255 @@ void Database::readFlexshelfLayout(std::string const &layout_file) {
     int32_t     hc_ymid = clock_region.attribute("hc_ymid").as_int();
     int32_t     hc_xmin = clock_region.attribute("hc_xmin").as_int();
     cbk.addClockRegionCbk(cr_name, start_x, start_y, end_x, end_y, hc_ymid, hc_xmin);
+  }
+  openparfPrint(kInfo, "read %d clock regions\n", num_crs);
+}
+
+void Database::readFlexshelfLayoutForMultiDie(std::string const &layout_file) {
+  // ==================== Read Layout ====================
+  pugi::xml_document     doc;
+  pugi::xml_parse_result result = doc.load_file(layout_file.c_str());
+  if (!result) {
+    openparfPrint(kError, "failed to open file %s for read\n", layout_file.c_str());
+    return;
+  }
+  pugi::xml_node             arch  = doc.child("arch");
+  pugi::xml_node             cores = arch.child("cores");
+  pugi::xml_node             chip  = arch.child("chip");
+  BookshelfDatabaseCallbacks cbk(*this);
+  openparfPrint(kInfo, "read layout from %s\n", layout_file.c_str());
+
+  // ------------------- read sites -------------------
+  struct SiteSize {
+    int32_t width;
+    int32_t height;
+    int32_t offset_x;
+    int32_t offset_y;
+  };
+
+  int32_t                                                      num_tile = 0;
+  std::unordered_map<std::string, std::pair<int32_t, int32_t>> tile_sizes;
+  std::unordered_map<std::string, std::vector<SiteSize>>       site_sizes;
+  for (pugi::xml_node tile : arch.child("tile_blocks").children("tile")) {
+    std::string type        = tile.attribute("type").as_string();
+    int32_t     tile_width  = tile.attribute("width").as_int();
+    int32_t     tile_height = tile.attribute("height").as_int();
+    num_tile += 1;
+    tile_sizes[type] = {tile_width, tile_height};
+
+    if (tile.children("sub_tiles").empty()) {
+      // read site size
+      site_sizes[type].push_back({tile_width, tile_height, 0, 0});
+      openparfPrint(kInfo, "tile %s size: %d %d\n", type.c_str(), tile_width, tile_height);
+
+      // read resource capacity
+      std::vector<std::pair<std::string, uint32_t>> resource_caps;
+      for (pugi::xml_node resource : tile.children("resource")) {
+        std::string resource_name = resource.attribute("name").as_string();
+        int32_t     cap           = resource.attribute("num").as_int();
+        resource_caps.emplace_back(resource_name, cap);
+        openparfPrint(kInfo, "tile %s resource %s capacity %d\n", type.c_str(), resource_name.c_str(), cap);
+      }
+      cbk.setSiteResources(type, resource_caps);
+    } else {
+      // read sub tile size
+      for (pugi::xml_node sub_tile : tile.child("sub_tiles").children("sub_tile")) {
+        int32_t width    = sub_tile.attribute("width").as_int();
+        int32_t height   = sub_tile.attribute("height").as_int();
+        int32_t offset_x = sub_tile.attribute("offset_x").as_int();
+        int32_t offset_y = sub_tile.attribute("offset_y").as_int();
+        site_sizes[type].push_back({width, height, offset_x, offset_y});
+        openparfPrint(kInfo, "tile %s sub site size: %d %d offset: %d %d\n", type.c_str(), width, height, offset_x,
+                      offset_y);
+      }
+
+      // read resource capacity
+      std::vector<std::pair<std::string, uint32_t>> resource_caps;
+      for (pugi::xml_node resource : tile.child("sub_tiles").children("resource")) {
+        std::string resource_name = resource.attribute("name").as_string();
+        int32_t     cap           = resource.attribute("num").as_int();
+        resource_caps.emplace_back(resource_name, cap);
+        openparfPrint(kInfo, "site %s resource %s capacity %d\n", type.c_str(), resource_name.c_str(), cap);
+      }
+      cbk.setSiteResources(type, resource_caps);
+    }
+  }
+  openparfPrint(kInfo, "read %d tiles\n", num_tile);
+
+  // ------------------- read primitives -------------------
+  int32_t num_primitive = 0;
+  for (pugi::xml_node primitive : arch.child("primitives").children("primitive")) {
+    num_primitive++;
+    std::string primitive_name = primitive.attribute("name").as_string();
+    cbk.addCellCbk(primitive_name);
+    openparfPrint(kDebug, "primitive %s\n", primitive_name.c_str());
+    for (pugi::xml_node pin : primitive.children()) {
+      int32_t width = pin.attribute("width").as_int();
+      for (int32_t cnt = 0; cnt < width; cnt++) {
+        std::string pin_direction = pin.name();
+        std::string pin_type      = pin.attribute("type").as_string();
+        std::string pin_name      = pin.attribute("name").as_string();
+        if (width > 1) {
+          // TODO: support multi-bit pin
+          pin_name += "[" + std::to_string(cnt) + "]";
+        }
+        if (pin_direction == "input" && pin_type == "ENABLE") {
+          cbk.addCellCtrlCEPinCbk(pin_name);
+        } else if (pin_direction == "input" && pin_type == "CLOCK") {
+          cbk.addCellClockPinCbk(pin_name);
+        } else if (pin_direction == "input" && pin_type == "RESET") {
+          cbk.addCellCtrlSRPinCbk(pin_name);
+        } else if (pin_direction == "input" && pin_type == "CTRL") {
+          cbk.addCellCtrlPinCbk(pin_name);
+        } else if (pin_direction == "input") {
+          cbk.addCellInputPinCbk(pin_name);
+        } else if (pin_direction == "output") {
+          cbk.addCellOutputPinCbk(pin_name);
+        } else {
+          openparfPrint(kError, "unknown pin type %s %s", pin_direction.c_str(), pin_type.c_str());
+        }
+      }
+    }
+    // resource demand
+    for (pugi::xml_node resource : primitive.children("resource")) {
+      std::string resource_name = resource.attribute("name").as_string();
+      int32_t     demand        = resource.attribute("num").as_int();
+      cbk.addResourceTypeCbk(resource_name, {primitive_name});
+      openparfPrint(kInfo, "primitive %s resource %s demand %d\n", primitive_name.c_str(), resource_name.c_str(),
+                    demand);
+    }
+  }
+  openparfPrint(kInfo, "read %d primitives\n", num_primitive);
+  cbk.endResourceTypeBlockCbk();
+
+  // ------------------- read chip -------------------
+  uint32_t num_slrX = static_cast<uint32_t>(chip.child("grid").attribute("cols").as_int());
+  uint32_t num_slrY = static_cast<uint32_t>(chip.child("grid").attribute("rows").as_int());
+  cbk.initSuperLogicRegionsCbk(num_slrX, num_slrY);
+  for (pugi::xml_node slr : chip.child("grid").children("core")) {
+    std::string slr_name   = slr.attribute("name").as_string();
+    std::string slr_type   = slr.attribute("type").as_string();
+    uint32_t    col_id     = static_cast<uint32_t>(slr.attribute("x").as_int());
+    uint32_t    row_id     = static_cast<uint32_t>(slr.attribute("y").as_int());
+    uint32_t    slr_width  = static_cast<uint32_t>(slr.attribute("width").as_int());
+    uint32_t    slr_height = static_cast<uint32_t>(slr.attribute("height").as_int());
+    cbk.addSuperLogicRegionCbk(slr_name, slr_type, col_id, row_id, slr_width, slr_height);
+  }
+  int32_t fpga_width  = layout().superLogicRegionMap().at(num_slrX - 1, num_slrY - 1).bbox().xh();
+  int32_t fpga_height = layout().superLogicRegionMap().at(num_slrX - 1, num_slrY - 1).bbox().yh();
+
+  openparfPrint(kDebug, "Multi-die FPGA with the SLR topology of (%d x %d) - FPGA Width: %d, FPGA Height: %d\n", 
+                num_slrX, num_slrY, fpga_width, fpga_height);
+
+  int32_t                                  num_sites = 0;
+  int32_t                                  num_crs   = 0;
+  int32_t                                  slr_crX   = cores.child("core").child("clock_region").attribute("width").as_int();
+  int32_t                                  slr_crY   = cores.child("core").child("clock_region").attribute("height").as_int();
+  int32_t                                  num_crX   = num_slrX * slr_crX;
+  int32_t                                  num_crY   = num_slrY * slr_crY;
+  std::unordered_map<std::string, int32_t> site_counts;
+  cbk.initSiteMapCbk(fpga_width, fpga_height);
+  cbk.initClockRegionsCbk(num_crX, num_crY);
+  auto const &site_map = layout().siteMap();
+  for (int32_t ix = 0; ix < layout().superLogicRegionMap().width(); ix++) {
+    for (int32_t iy = 0; iy < layout().superLogicRegionMap().height(); iy++) {
+      std::string slr_type   = layout().superLogicRegionMap().at(ix, iy).type();
+      int32_t     slr_startX = layout().superLogicRegionMap().at(ix, iy).bbox().xl();
+      int32_t     slr_startY = layout().superLogicRegionMap().at(ix, iy).bbox().yl();
+      int32_t     slr_endX   = layout().superLogicRegionMap().at(ix, iy).bbox().xh();
+      int32_t     slr_endY   = layout().superLogicRegionMap().at(ix, iy).bbox().yh();
+      bool        slr_found  = false;
+      for (pugi::xml_node core : cores.children("core")) {
+        std::string core_type = core.attribute("name").as_string();
+        if (slr_type == core_type) {
+          slr_found       = true;
+          bool grid_found = false;
+          // ------------------- read tile grid -------------------
+          for (pugi::xml_node grid : core.children("grid")) {
+            std::string grid_name = grid.attribute("name").as_string();
+            if (grid_name == "TILE_GRID") {
+              grid_found               = true;
+              std::string default_type = grid.child("default").attribute("type").as_string();
+              int32_t     grid_width   = grid.attribute("width").as_int();
+              int32_t     grid_height  = grid.attribute("height").as_int();
+              openparfAssertMsg(grid_width == (slr_endX - slr_startX), "unmatch SLR width: (%d, %d)", grid_width,
+                                slr_endX - slr_startX);
+              openparfAssertMsg(grid_height == (slr_endY - slr_startY), "unmatch SLR height: (%d, %d)", grid_height,
+                                slr_endY - slr_startY);
+
+              for (pugi::xml_node inst : grid.children("region")) {
+                std::string inst_type = inst.attribute("type").as_string();
+                int32_t     start_x   = inst.attribute("start_x").as_int();
+                int32_t     start_y   = inst.attribute("start_y").as_int();
+                int32_t     end_x     = inst.attribute("end_x").as_int();
+                int32_t     end_y     = inst.attribute("end_y").as_int();
+
+                openparfAssertMsg(tile_sizes.find(inst_type) != tile_sizes.end(), "unknown tile type %s",
+                                  inst_type.c_str());
+                openparfAssertMsg(site_sizes.find(inst_type) != site_sizes.end(), "unknown site type %s",
+                                  inst_type.c_str());
+                for (int32_t tx = start_x; tx <= end_x; tx += tile_sizes[inst_type].first) {
+                  for (int32_t ty = start_y; ty <= end_y; ty += tile_sizes[inst_type].second) {
+                    for (SiteSize site_size : site_sizes[inst_type]) {
+                      num_sites += 1;
+                      site_counts[inst_type] += 1;
+                      cbk.setSiteMapEntryWithBBoxCbk(tx + site_size.offset_x + slr_startX,
+                                                     ty + site_size.offset_y + slr_startY,
+                                                     tx + site_size.offset_x + site_size.width + slr_startX,
+                                                     ty + site_size.offset_y + site_size.height + slr_startY, inst_type);
+                    }
+                  }
+                }
+              }
+
+              // now add default tile
+              int32_t dx = tile_sizes[default_type].first;
+              int32_t dy = tile_sizes[default_type].second;
+              openparfAssertMsg(site_sizes[default_type].size() == 1, "default tile should have only one site");
+              openparfAssertMsg(dx == 1 && dy == 1, "default tile should be 1x1");
+              for (int32_t x = slr_startX; x < slr_endX; x++) {
+                for (int32_t y = slr_startY; y < slr_endY; y++) {
+                  if (!site_map.at(x, y) && !site_map.overlapAt(x, y)) {
+                    cbk.setSiteMapEntryWithBBoxCbk(x, y, x + dx, y + dy, default_type);
+                    num_sites += 1;
+                    site_counts[default_type] += 1;
+                  }
+                }
+              }
+            }
+          }
+          openparfAssertMsg(grid_found, "tile grid not found");
+
+          // ------------------- read clock grid -------------------
+          for (pugi::xml_node clock_region : core.child("clock_region").children("region")) {
+            std::string cr_basename = clock_region.attribute("name").as_string();
+            int32_t     start_x     = clock_region.attribute("start_x").as_int();
+            int32_t     start_y     = clock_region.attribute("start_y").as_int();
+            int32_t     end_x       = clock_region.attribute("end_x").as_int();
+            int32_t     end_y       = clock_region.attribute("end_y").as_int();
+            int32_t     hc_ymid     = clock_region.attribute("hc_ymid").as_int();
+            int32_t     hc_xmin     = clock_region.attribute("hc_xmin").as_int();
+            num_crs += 1;
+            std::string cr_name = "SLR_X" + std::to_string(ix) + "Y" + std::to_string(iy) + "." + cr_basename;
+            cbk.addClockRegionForMultiDieCbk(cr_name, start_x + slr_startX, start_y + slr_startY, end_x + slr_startX,
+                                             end_y + slr_startY, hc_ymid + slr_startY, hc_xmin + slr_startX, slr_crX, slr_crY);
+          }
+        }
+      }
+      openparfAssertMsg(slr_found, "The specific slr not found");
+    }
+  }
+  
+  // ------------------- add half-column region -------------------
+  for (IndexType crX = 0; crX < layout().clockRegionMap().width(); crX++) {
+    for (IndexType crY = 0; crY < layout().clockRegionMap().height(); crY++) {
+      cbk.addHalfColumnRegionForMultiDieCbk(crX, crY);
+    }
+  }
+
+  openparfPrint(kInfo, "read %d sites\n", num_sites);
+  for (auto const &site_count : site_counts) {
+    openparfPrint(kInfo, "site type %s count %d\n", site_count.first.c_str(), site_count.second);
   }
   openparfPrint(kInfo, "read %d clock regions\n", num_crs);
 }

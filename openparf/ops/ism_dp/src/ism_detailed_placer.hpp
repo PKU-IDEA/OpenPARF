@@ -353,7 +353,10 @@ class ISMDetailedPlacer {
     initCLBISMProblem(clusters, prob, honorClockConstraint_);
 
     // Perform the ISM
-    ISMSolver solver(prob, param, num_threads_, honorClockConstraint_);
+    IndexType xl = 0, yl = 0;
+    IndexType slrWidth  = param_.slrAwareFlag? db_.slrWidth() : kIndexTypeMax;
+    IndexType slrHeight = param_.slrAwareFlag? db_.slrHeight() : kIndexTypeMax;
+    ISMSolver solver(prob, param, num_threads_, honorClockConstraint_, param_.slrAwareFlag, xl, yl, slrWidth, slrHeight);
     solver.buildISMProblem(prob);
     solver.run();
 
@@ -462,7 +465,10 @@ class ISMDetailedPlacer {
     initBLEISMProblem(clusters, prob);
 
     // Perform the ISM
-    ISMSolver solver(prob, param, num_threads_, honorClockConstraint_);
+    IndexType xl = 0, yl = 0;
+    IndexType slrWidth  = param_.slrAwareFlag? db_.slrWidth() : kIndexTypeMax;
+    IndexType slrHeight = param_.slrAwareFlag? db_.slrHeight() : kIndexTypeMax;
+    ISMSolver solver(prob, param, num_threads_, honorClockConstraint_, param_.slrAwareFlag, xl, yl, slrWidth, slrHeight);
     solver.buildISMProblem(prob);
     solver.run();
 
@@ -639,7 +645,10 @@ class ISMDetailedPlacer {
     initPairISMProblem(param, clusters, prob);
 
     // Perform the ISM
-    ISMSolver solver(prob, param, num_threads_, honorClockConstraint_);
+    IndexType xl = 0, yl = 0;
+    IndexType slrWidth  = param_.slrAwareFlag? db_.slrWidth() : kIndexTypeMax;
+    IndexType slrHeight = param_.slrAwareFlag? db_.slrHeight() : kIndexTypeMax;
+    ISMSolver solver(prob, param, num_threads_, honorClockConstraint_, param_.slrAwareFlag, xl, yl, slrWidth, slrHeight);
     solver.buildISMProblem(prob);
     solver.run();
 

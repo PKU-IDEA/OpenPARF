@@ -43,7 +43,7 @@
   },
   "route_flag": {
     "description": "whether use routing",
-    "default": 1
+    "default": 0
   },
   "stop_overflow": {
     "description": "stopping criteria, consider stop when the overflow reaches to a ratio",
@@ -421,5 +421,17 @@
   "gp_timing_adjustment_scheme": {
     "description": "net-weighting | min-max",
     "default": "net-weighting"
+  },
+  "slr_aware_flag": {
+    "description": "Enables consideration of SLRs to optimize the count of SLLs.",
+    "default": 0
+  },
+  "wlw_psi_reset": {
+    "description": "Defines the initial reset value for the psi parameter",
+    "default": 5.0
+  },
+  "wlw_step_rate": {
+    "description": "Step rate for adjusting psi value at each epoch",
+    "default": 1.002
   }
 }
