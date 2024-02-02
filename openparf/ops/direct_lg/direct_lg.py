@@ -68,6 +68,9 @@ class DirectLegalizeParam(object):
         # Clock Region Attribute
         self.useXarchLgRule = (params.architecture_type == "xarch")
 
+        # Multi-die Architecture
+        self.sllIncreaseWt  = 4.0
+        self.slrAwareFlag = False
 
 class DirectLegalize(object):
     """
@@ -91,6 +94,9 @@ class DirectLegalize(object):
         self.param.numClockNet = 0
         self.param.numHalfColumn = 0
         self.param.maxClockNetPerHalfColumn = 0
+
+    def reset_slr_aware_flag(self, slr_aware_flag: bool):
+        self.param.slrAwareFlag = slr_aware_flag
 
     def forward(self, pos):
         if pos.is_cuda:
@@ -124,6 +130,9 @@ class ClockAwareDirectLegalize(DirectLegalize):
 
     def reset_clock_available_clock_region(self, clock_available_clock_region):
         self.clock_available_clock_region = clock_available_clock_region
+
+    def reset_slr_aware_flag(self, slr_aware_flag: bool):
+        self.param.slrAwareFlag = slr_aware_flag
 
     def forward(self, pos):
         if not self.honor_fence_region_constraints:

@@ -24,8 +24,8 @@ class OptIter(object):
 
     def __str__(self):
         content = "Iter %4d" % self.iteration
-        content += " (%2d, %4d, %2d, %2d)" % (self.iter_eta, self.iter_gamma, self.iter_lambda,
-                                          self.iter_sub)
+        content += " (%2d, %4d, %2d, %2d)" % (self.iter_eta, self.iter_gamma,
+                                              self.iter_lambda, self.iter_sub)
         return content
 
     def __repr__(self):
@@ -42,6 +42,7 @@ def array2str(arr):
         delimiter = ", "
     content += "]"
     return content
+
 
 def iarray2str(arr):
     content = "["
@@ -80,11 +81,15 @@ class EvalMetric(object):
         self.objective = None
         self.wirelength = None
         self.density = None
+        self.psi = None
         self.lambdas = None
         self.step_size = None
         self.hpwl = None
+        self.sll = None
+        self.wasll = None
         self.overflow = None
         self.gamma = None
+        self.soft_floor_gamma = None
         self.eta = None
         self.ck_illegal_insts_num, self.movable_insts_num = None, None
         self.cr_max_displacement = None
@@ -106,15 +111,23 @@ class EvalMetric(object):
         if self.objective is not None:
             content += ", Obj %.6E" % self.objective
         if self.wirelength is not None:
-            content += ", WL %.3E" % self.wirelength
+            content += ", WL %.6E" % self.wirelength
+        if self.wasll is not None:
+            content += ", WASLL %.6E" % self.wasll
         if self.density is not None:
             content += ", Density %s" % array2str(self.density)
         if self.lambdas is not None:
             content += ", Lambdas "
             content += array2str(self.lambdas)
+        if self.psi is not None and self.params.slr_aware_flag:
+            content += ", Psi "
+            content += "%.3E" % self.psi
         if self.step_size is not None:
             content += ", Step size "
             content += "%.3E" % self.step_size
+        if self.sll is not None:
+            content += ", SLL counts "
+            content += "%d" % self.sll
         if self.hpwl is not None:
             content += ", HPWL %.3E (%g*%.3E + %g*%.3E)" % (
                     self.hpwl[0] * self.params.wirelength_weights[0] \
@@ -125,25 +138,36 @@ class EvalMetric(object):
             content += ", Overflow "
             content += array2str(self.overflow)
         if self.gamma is not None:
-            content += ", gamma %.3E" % self.gamma
+            content += ", gamma %.3E" % (self.gamma)
+        if self.soft_floor_gamma is not None and self.params.slr_aware_flag:
+            content += ", soft_floor_gamma %.3E" % (self.soft_floor_gamma)
         if self.eta is not None:
             content += ", eta %.3E" % self.eta
         if self.at_avg_grad_norms is not None:
             content += ", avg_at_grad_norm " + array2str(self.at_avg_grad_norms)
         if self.ck_illegal_insts_num is not None:
             content += ", ck illegal instances : {}/{}, dist-max: {}".format(
-                self.ck_illegal_insts_num,
-                self.movable_insts_num,
+                self.ck_illegal_insts_num, self.movable_insts_num,
                 self.cr_max_displacement)
         if self.cr_ck_count is not None:
             content += ", CR-CK Count {}".format(iarray2str(self.cr_ck_count))
         if self.grad_dicts is not None:
-            d_o_w = self.grad_dicts['density_grad_norm'] /  self.grad_dicts['wirelength_grad_norm']
-            if 'fence_region_grad_norm' in self.grad_dicts:
-                f_o_w = self.grad_dicts['fence_region_grad_norm'] /  self.grad_dicts['wirelength_grad_norm']
-                content += ", nomalized-grad(wirelength/density/clock): %.3E/%.3E/%.3E" % (1, d_o_w, f_o_w)
+            if ('wasll_grad_norm' in self.grad_dicts):
+                s_o_w = self.grad_dicts['wasll_grad_norm'] / self.grad_dicts[
+                    'wirelength_grad_norm']
             else:
-                content += ", nomalized-grad(wirelength/density): %.3E/%.3E" % (1, d_o_w)
+                s_o_w = 0.0
+            d_o_w = self.grad_dicts['density_grad_norm'] / self.grad_dicts[
+                'wirelength_grad_norm']
+            if 'fence_region_grad_norm' in self.grad_dicts:
+                f_o_w = self.grad_dicts[
+                    'fence_region_grad_norm'] / self.grad_dicts[
+                        'wirelength_grad_norm']
+                content += ", nomalized-grad(wasll/wirelength;density/wirelength;clock/wirelength): %.3E; %.3E; %.3E" % (
+                    s_o_w, d_o_w, f_o_w)
+            else:
+                content += ", nomalized-grad(wasll/wirelength;density/wirelength): %.3E; %.3E" % (
+                    s_o_w, d_o_w)
 
         if self.eval_time is not None:
             content += ", time %.3fms" % (self.eval_time * 1000)
@@ -170,8 +194,12 @@ class EvalMetric(object):
                 self.objective = obj.data
             if "wirelength" in ops:
                 self.wirelength = ops["wirelength"](var).data
+            if "wasll" in ops:
+                self.wasll = ops["wasll"](var).data
             if "density" in ops:
                 self.density = ops["density"](var).data
+            if "sll" in ops:
+                self.sll = ops["sll"](var).data
             if "hpwl" in ops:
                 self.hpwl = ops["hpwl"](var).data
             if "overflow" in ops:
@@ -179,7 +207,8 @@ class EvalMetric(object):
             if self.current_grad is not None:
                 self.at_avg_grad_norms = []
                 for at_type in range(data_cls.num_area_types):
-                    at_grad = self.current_grad[data_cls.area_type_inst_groups[at_type]]
+                    at_grad = self.current_grad[
+                        data_cls.area_type_inst_groups[at_type]]
                     if at_grad.size()[0] > 0:
                         avg_at_grad_norm = at_grad.norm(dim=1).mean().item()
                     else:

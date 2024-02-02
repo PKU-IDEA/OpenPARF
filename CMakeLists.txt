@@ -27,7 +27,7 @@ project(OpenPARF)
 add_subdirectory(cmake/Ccache.cmake)
 
 # options
-option(ENABLE_ROUTER "Enable router build" ON)
+option(ENABLE_ROUTER "Enable router build" OFF)
 
 # disable frame pointer omission for debugging.
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fno-omit-frame-pointer")

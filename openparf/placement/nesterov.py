@@ -77,7 +77,7 @@ class NesterovAcceleratedGradientOptimizer(Optimizer):
     def __setstate__(self, state):
         super(NesterovAcceleratedGradientOptimizer, self).__setstate__(state)
 
-    def step(self, closure=None, cur_metric=None):
+    def step(self, closure=None, cur_metric=None, sll_flag=False):
         """ Performs a single optimization step.
 
         :param data_cls: Data Collection
@@ -100,7 +100,7 @@ class NesterovAcceleratedGradientOptimizer(Optimizer):
                     #group['v_k'].append(torch.autograd.Variable(p.data, requires_grad=True))
                     group['v_k'].append(p)
                     constraint_fn(group['v_k'][i])
-                    obj, grad, grad_dicts = obj_and_grad_fn(group['v_k'][i])
+                    obj, grad, grad_dicts = obj_and_grad_fn(group['v_k'][i], sll_flag)
                     group['g_k'].append(grad.data.clone())  # must clone
                     group['obj_k'].append(obj.data.clone())
                 u_k = group['u_k'][i]
@@ -116,7 +116,7 @@ class NesterovAcceleratedGradientOptimizer(Optimizer):
                     group['v_k_1'][i].data.copy_(group['v_k'][i] -
                                                  group['lr'] * g_k)
                     constraint_fn(group['v_k_1'][i])
-                    obj, grad, grad_dicts = obj_and_grad_fn(group['v_k_1'][i])
+                    obj, grad, grad_dicts = obj_and_grad_fn(group['v_k_1'][i], sll_flag)
                     group['g_k_1'].append(grad.data)
                     group['obj_k_1'].append(obj.data.clone())
                 a_k = group['a_k'][i]
@@ -149,7 +149,7 @@ class NesterovAcceleratedGradientOptimizer(Optimizer):
                     # make sure v_kp1 subjects to constraints
                     # g_kp1 must correspond to v_kp1
                     constraint_fn(v_kp1)
-                    f_kp1, g_kp1, grad_dicts = obj_and_grad_fn(v_kp1)
+                    f_kp1, g_kp1, grad_dicts = obj_and_grad_fn(v_kp1, sll_flag)
                     if cur_metric is not None:
                         cur_metric.grad_dicts = grad_dicts
                         cur_metric.current_grad = g_kp1

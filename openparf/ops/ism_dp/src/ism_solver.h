@@ -85,9 +85,10 @@ class ISMSolver {
   struct ISMNet {
     IndexType     numPins() const { return pinIdArray.size(); }
 
-    IndexVector   pinIdArray;   // IDs of pins in this net
-    RealType      weight = 0;   // Wirelength weight
-    Box<RealType> bbox;         // Net bounding box
+    IndexVector     pinIdArray;   // IDs of pins in this net
+    RealType        weight = 0;   // Wirelength weight
+    Box<RealType>   bbox;         // Net bounding box
+    Box<IndexType>  slr_bbox;     // Net bounding box of slr, here IndexType is std::int32_t.
   };
 
   /// Class for pins used in ISM
@@ -133,9 +134,10 @@ class ISMSolver {
     ISMMemory() : graphPtr(new lemon::ListDigraph()) {}
 
     // For building ISM
-    std::vector<Box<RealType>> bboxes;   // Bounding boxes of nets that are incident to the instances in the set
-    std::vector<XY<RealType>> offset;   // offset[i] is the pin offset for the insatnce in net bounding box bboxArray[i]
-    IndexVector               netIds;   // netIds[i] is the ID of the net corresponding to bboxArray[i]
+    std::vector<Box<RealType>>  bboxes;       // Bounding boxes of nets that are incident to the instances in the set
+    std::vector<Box<IndexType>> slr_bboxes;   // Bounding boxes_slr of nets that are incident to the instances in the set
+    std::vector<XY<RealType>>   offset;       // offset[i] is the pin offset for the insatnce in net bounding box bboxArray[i]
+    IndexVector                 netIds;       // netIds[i] is the ID of the net corresponding to bboxArray[i]
     IndexVector
             ranges;   // [ranges[i], ranges[i+1]) contains the net bounding box related to the i-th instance in the set
     Vector2D<FlowIntType>                        costMtx;   // Cost matrix
@@ -157,7 +159,10 @@ class ISMSolver {
   };
 
  public:
-  ISMSolver(const ISMProblem &prob, const ISMParam &param, IndexType num_threads, bool honorClockConstraints = false);
+  ISMSolver(const ISMProblem &prob, const ISMParam &param, IndexType num_threads, 
+            bool honorClockConstraints = false, bool slrAwareFlag = false, 
+            IndexType xl = 0, IndexType yl = 0, 
+            IndexType slrWidth = kIndexTypeMax, IndexType slrHeight = kIndexTypeMax);
 
   void                  buildISMProblem(const ISMProblem &prob);
   void                  run();
@@ -231,6 +236,14 @@ class ISMSolver {
   IndexType                                            _iter;          // Number of ISM iterations done
   XY<RealType>                                         _wl;            // Current unscaled x- and y-derected HPWL
   IndexType                                            _num_threads;   // number of threads
+
+  // Params for multi-die architecture
+  bool                                                 _slrAwareFlag; // consider multi-die architecture
+  IndexType                                            _xl;           // the x-direction lower bound of the placement region
+  IndexType                                            _yl;           // the y-direction lower bound of the placement region
+  IndexType                                            _slrWidth;     // SLR width
+  IndexType                                            _slrHeight;    // SLR height
+  IndexType                                            _sll;          // super long line
 };
 
 }   // namespace ism_dp

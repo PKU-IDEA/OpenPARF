@@ -12,10 +12,11 @@ OPENPARF_BEGIN_NAMESPACE
 template<typename T>
 class MinCostFlowLegalizer {
  public:
-  using GraphType    = lemon::ListDigraph;
-  using CapacityType = int32_t;
-  using CostType     = int32_t;
-  using SolverType   = lemon::NetworkSimplex<GraphType, CapacityType, CostType>;
+  using GraphType       = lemon::ListDigraph;
+  using CapacityType    = int32_t;
+  using CostType        = int32_t;
+  using SolverType      = lemon::NetworkSimplex<GraphType, CapacityType, CostType>;
+  using IndexVectorType = std::vector<int32_t>;
 
   struct MinCostFlowProblem {
     using ResultType = typename SolverType::ProblemType;
@@ -103,10 +104,12 @@ class MinCostFlowLegalizer {
     xy_to_half_column_functor = [&](int32_t x, int32_t y) {
       return placedb.XyToHcIndex((database::PlaceDB::CoordinateType) x, (database::PlaceDB::CoordinateType) y);
     };
+    xy_to_slr_functor = [&](int32_t x, int32_t y) { return placedb.XyToSlrIndex(x, y); };
   }
   at::Tensor forward(at::Tensor pos);
   void       add_sssir_instances(at::Tensor inst_ids, at::Tensor inst_weights, at::Tensor inst_compatiable_sites);
   void       set_honor_clock_constraints(bool v) { honor_clock_region_constraints = v; }
+  void       set_slr_aware_flag(bool v) { slr_aware_flag = v; }
   void       reset_clock_available_clock_region(at::Tensor _clock_available_clock_region) {
     clock_available_clock_region = _clock_available_clock_region;
   }
@@ -142,6 +145,10 @@ class MinCostFlowLegalizer {
   // Half column structures
   std::vector<HalfColumnRegionScoreBoard>   hcsb_array;
   int32_t                                   max_clock_net_per_half_column;
+
+  // Params for multi-die architecture
+  std::function<IndexVectorType(int32_t, int32_t)> xy_to_slr_functor;
+  bool                                             slr_aware_flag;
 
   // I give up, binding is too complicated
   database::PlaceDB const                  &_placedb;

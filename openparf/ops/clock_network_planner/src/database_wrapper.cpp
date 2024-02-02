@@ -68,7 +68,7 @@ SiteType WrapperDatabase::idToSiteType(IndexType i) {
   return _idToSiteTypeMap[i];
 }
 IndexType WrapperDatabase::siteTypeToId(SiteType s) {
-  // Openfort does not yet differenciate SLICEL and SLICEM
+  // OpenPARF does not yet differenciate SLICEL and SLICEM
   openparfAssertMsg(s != SiteType::SLICEM, "SLICEM not yet supported in OpenPARF");
   if (_siteTypeToIdMap.find(s) == _siteTypeToIdMap.end()) openparfAssert(false);
   return _siteTypeToIdMap[s];

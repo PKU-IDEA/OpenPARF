@@ -71,6 +71,9 @@ class MinCostFlowLegalizer:
         self.legalizer.reset_clock_available_clock_region(
             clock_available_clock_region)
 
+    def reset_slr_aware_flag(self, v: bool):
+        self.legalizer.set_slr_aware_flag(v)
+
     def __call__(self, pos):
         if pos.is_cuda:
             local_pos = pos.cpu()

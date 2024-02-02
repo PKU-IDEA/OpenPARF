@@ -9,6 +9,7 @@
 
 #include "database/clock_region.h"
 #include "database/half_column_region.h"
+#include "database/super_logic_region.h"
 #include "database/resource.h"
 #include "database/site.h"
 
@@ -25,6 +26,7 @@ public:
   Layout() : BaseType() {
     site_map_.setId(0);
     clock_region_map_.setId(0);
+    super_logic_region_map_.setId(0);
     site_type_map_.setId(0);
     resource_map_.setId(0);
   }
@@ -33,6 +35,7 @@ public:
   Layout(IndexType id) : BaseType(id) {
     site_map_.setId(0);
     clock_region_map_.setId(0);
+    super_logic_region_map_.setId(0);
     site_type_map_.setId(0);
     resource_map_.setId(0);
   }
@@ -73,6 +76,12 @@ public:
 
   /// @brief getter for clock region map
   ClockRegionMap &clockRegionMap() { return clock_region_map_; }
+
+  /// @brief getter for super logic region map
+  SuperLogicRegionMap const &superLogicRegionMap() const { return super_logic_region_map_; }
+
+  /// @brief getter for super logic region map
+  SuperLogicRegionMap &superLogicRegionMap() { return super_logic_region_map_; }
 
   /// @brief number of half column regions
   IndexType numHalfColumnRegions() const { return half_column_regions_.size(); }
@@ -137,16 +146,14 @@ protected:
   /// @brief overload output stream
   friend std::ostream &operator<<(std::ostream &os, Layout const &rhs);
 
-  SiteMap site_map_;                ///< 2D map for sites
-  ClockRegionMap clock_region_map_; ///< 2D map for clock regions
-  std::vector<HalfColumnRegion>
-      half_column_regions_;   ///< a collection of half column regions
-  SiteTypeMap site_type_map_; ///< a collection of site types
-  ResourceMap resource_map_;  ///< a collection of resources
-
-  std::vector<IndexType>
-      num_sites_; ///< cached number of sites for each site type
-                  ///< dimension is the number of site types
+  SiteMap                       site_map_;                 ///< 2D map for sites
+  ClockRegionMap                clock_region_map_;         ///< 2D map for clock regions
+  SuperLogicRegionMap           super_logic_region_map_;   ///< 2D map for super logic regions
+  std::vector<HalfColumnRegion> half_column_regions_;      ///< a collection of half column regions
+  SiteTypeMap                   site_type_map_;            ///< a collection of site types
+  ResourceMap                   resource_map_;             ///< a collection of resources
+  std::vector<IndexType>        num_sites_;                ///< cached number of sites for each site type
+                                                           ///< dimension is the number of site types
 };
 
 } // namespace database

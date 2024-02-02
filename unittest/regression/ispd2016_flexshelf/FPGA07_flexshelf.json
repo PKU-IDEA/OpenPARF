@@ -3,7 +3,8 @@
 "benchmark_format": "flexshelf",
 "architecture_name": "ultrascale",
 "aux_input" : "benchmarks/ispd2016/FPGA07/design.aux",
-"layout_input": "benchmarks/arch/ultrascale/layout.xml",
+"layout_input": "benchmarks/arch/ultrascale/multi-die_layout_1x4.xml",
+"routing_architecture_input": "benchmarks/arch/ultrascale/x_arch.xml",
 "design_input": "benchmarks/ispd2016_flexshelf/FPGA07/design.yaml",
 "gpu" : 1,
 "target_density" : 1.0,
@@ -68,5 +69,8 @@
 "dump_legalize_solution_flag" : 0,
 "load_legalize_solution_file" : "",
 "result_dir" : "results/FPGA07",
-"route_flag" : 1
+"route_flag" : 0,
+"slr_aware_flag": 1,
+"wlw_psi_reset": 10.0,
+"wlw_step_rate": 1.001
 }

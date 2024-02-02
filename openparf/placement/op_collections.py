@@ -52,6 +52,9 @@ from ..ops.static_timing_analysis import static_timing_analysis
 from ..ops.congestion_prediction import congestion_prediction
 from ..ops.masked_direct_lg import masked_direct_lg
 from ..ops.ssr_abacus_lg import ssr_abacus_lg
+from ..ops.sll import sll
+from ..ops.soft_floor import soft_floor
+from ..ops.wasll import wasll
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +176,37 @@ def build_precond_op(params, placedb, data_cls):
 
     return precond_op
 
+def build_precond2_op(params, placedb, data_cls):
+    """ Compute preconditioning
+    """
+    # regard sll_precond as wl_precond
+    # the data_cls.multiplier.psi has been initialized and fixed in "wl_precond_means[area_type]"
+    wl_precond_means = data_cls.wl_precond.new_ones(data_cls.num_area_types)
+
+    def precond2_op(grad, alphas=None):      
+        with torch.no_grad():
+            density_precond = data_cls.inst_areas.new_zeros(
+                len(data_cls.inst_areas))
+            if alphas is None:
+                alphas = grad.new_ones(data_cls.num_area_types)
+            else:
+                alphas = alphas.clone()
+            for area_type in range(data_cls.num_area_types):
+                inst_ids = data_cls.area_type_inst_groups[area_type]
+                if(len(inst_ids)):
+                    wl_precond_means[area_type] = (1.0 + data_cls.multiplier.psi) * data_cls.wl_precond[inst_ids].norm(p=1) / (
+                        len(inst_ids) - data_cls.num_fillers[area_type])                    
+                lambda_areas = data_cls.inst_areas[inst_ids, area_type] * data_cls.multiplier.lambdas[area_type] * \
+                    alphas[area_type] * wl_precond_means[area_type]
+                density_precond[inst_ids] += lambda_areas
+            # lambdas = torch.gather(input=data_cls.multiplier.lambdas_ext,
+            #                        index=data_cls.inst_area_types_long,
+            #                        dim=0)
+            # density_precond = lambdas.mul_(data_cls.inst_areas)
+            precond = ((1.0 + data_cls.multiplier.psi) * data_cls.wl_precond + density_precond).clamp_(min=1)  #Eq. (5b)
+            grad.view([-1, 2]).div_(precond.view([-1, 1])) #return grad.
+
+    return precond2_op
 
 def build_direct_lg_op(params, placedb, data_cls):
     """Legalize LUTs and FFs"""
@@ -478,6 +512,17 @@ def build_ssr_abacus_legalize_op(params, data_cls, placedb):
     )
     return ssr_abacus_lg.SsrAbacusLegalizer(placedb, data_cls, movable_inst_ids, at_id)
 
+def build_soft_floor_op(params, placedb, data_cls):
+    """ Compute SLR index transformed by soft floor method
+    """
+
+    return soft_floor.SoftFloor(xl=data_cls.diearea[0],
+                                yl=data_cls.diearea[1], 
+                                num_slrX=placedb.numSlrX(),
+                                num_slrY=placedb.numSlrY(),
+                                slr_width=placedb.slrWidth(),
+                                slr_height=placedb.slrHeight(),
+                                soft_floor_gamma=data_cls.soft_floor_gamma.gamma)
 
 class OpCollections(object):
     """Collection of all operators for placement"""
@@ -496,6 +541,7 @@ class OpCollections(object):
             params, placedb, data_cls
         )
         self.precond_op = build_precond_op(params, placedb, data_cls)
+        self.precond2_op = build_precond2_op(params, placedb, data_cls)
         # single-site resource
         # i.e., a resource occupies exactly one site
         self.ssr_legalize_op = mcf_lg.MinCostFlowLegalizer(params, placedb, data_cls)
@@ -565,6 +611,12 @@ class OpCollections(object):
         else:
             self.estimate_delay_op = None
             self.static_timing_op = None
+
+        # Opeartions for Multi-die Architecture
+        if params.slr_aware_flag:
+            self.sll_op = self.build_sll_op(params, placedb, data_cls)
+            self.wasll_op = self.build_wasll_op(params, placedb, data_cls)
+            self.soft_floor_op = build_soft_floor_op(params, placedb, data_cls)
 
     def build_random_pos_op(self, params, placedb, data_cls):
         def random_pos(pos):
@@ -718,3 +770,51 @@ class OpCollections(object):
             )
 
         return normalized_overflow_op
+
+    def build_sll_op(self, params, placedb, data_cls):
+        """ SLL counts """
+
+        op = sll.SLL(flat_netpin=data_cls.net_pin_map.bs,
+                     netpin_start=data_cls.net_pin_map.b_starts,
+                     net_weights=data_cls.net_weights,
+                     net_mask=data_cls.net_mask,
+                     xl=data_cls.diearea[0],
+                     yl=data_cls.diearea[1],
+                     slr_width=placedb.slrWidth(),
+                     slr_height=placedb.slrHeight(),
+                     num_slrX=placedb.numSlrX(),
+                     num_slrY=placedb.numSlrY())
+
+        def sll_op(pos):
+            pin_pos = self.pin_pos_op(pos)
+            return op(pin_pos)
+
+        return sll_op
+
+    def build_wasll_op(self, params, placedb, data_cls):
+        """ Weighted-average SLL """
+        op = wasll.WASLL(flat_netpin=data_cls.net_pin_map.bs,
+                         netpin_start=data_cls.net_pin_map.b_starts,
+                         pin2net_map=data_cls.net_pin_map.b2as,
+                         net_weights=data_cls.net_weights,
+                         # net_mask=data_cls.net_mask,
+                         net_mask=data_cls.net_mask_ignore_large,
+                         pin_mask=data_cls.pin_mask,
+                         gamma=data_cls.gamma.gamma,
+                         num_slrX=placedb.numSlrX(),
+                         num_slrY=placedb.numSlrY())
+          
+        def wa_sll_op(pos):
+            pin_pos = self.pin_pos_op(pos)
+            soft_floor_op = soft_floor.SoftFloor(
+                            xl=data_cls.diearea[0],
+                            yl=data_cls.diearea[1], 
+                            num_slrX=placedb.numSlrX(),
+                            num_slrY=placedb.numSlrY(),
+                            slr_width=placedb.slrWidth(),
+                            slr_height=placedb.slrHeight(),
+                            soft_floor_gamma=data_cls.soft_floor_gamma.gamma)
+            pin_slr_index = soft_floor_op(pin_pos)
+            return op(pin_slr_index)
+
+        return wa_sll_op

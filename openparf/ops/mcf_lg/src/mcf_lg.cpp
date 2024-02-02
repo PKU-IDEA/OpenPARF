@@ -107,6 +107,10 @@ at::Tensor MinCostFlowLegalizer<T>::forward(at::Tensor pos) {
                 T       inst_weight = inst_weight_acc[i];
                 T       x           = pos_acc[inst_id][0];
                 T       y           = pos_acc[inst_id][1];
+                IndexVectorType inst_slr_index;
+                if (slr_aware_flag) {
+                    inst_slr_index = xy_to_slr_functor(static_cast<int32_t>(x), static_cast<int32_t>(y));
+                }
                 for (int32_t s = 0; s < m.num_sites; s++) {
                     T       xl     = inst_compatiable_sites_acc[s][0];
                     T       xh     = inst_compatiable_sites_acc[s][2];
@@ -122,14 +126,20 @@ at::Tensor MinCostFlowLegalizer<T>::forward(at::Tensor pos) {
                     if (m_dist >= min_dis and m_dist < max_dis and
                         (not honor_clock_region_constraints or
                          inst_clock_legal_at_site(inst_id, xl, yl))) {
-                        m.inst_to_site_arcs.emplace_back(
-                                inst_id, s,
-                                mcf_problem.graph.addArc(m.instance_nodes[i], m.site_nodes[s]));
-                        auto &arc             = std::get<2>(m.inst_to_site_arcs.back());
-                        mcf_problem.cost[arc] = (CostType) (m_dist * inst_weight * scale_factor);
-                        mcf_problem.capacity_lower_bound[arc] = 0;
-                        mcf_problem.capacity_upper_bound[arc] = 1;
-                        if(honor_clock_region_constraints)
+                      if (slr_aware_flag) {
+                        IndexVectorType site_slr_index = xy_to_slr_functor(static_cast<int32_t>(x), static_cast<int32_t>(y));
+                        m_dist += (std::abs(site_slr_index[0] - inst_slr_index[0]) +
+                                   5 * std::abs(site_slr_index[1] - inst_slr_index[1])) *
+                                  m.max_distance;
+                      }
+                      m.inst_to_site_arcs.emplace_back(
+                          inst_id, s,
+                          mcf_problem.graph.addArc(m.instance_nodes[i], m.site_nodes[s]));
+                      auto &arc                             = std::get<2>(m.inst_to_site_arcs.back());
+                      mcf_problem.cost[arc]                 = (CostType)(m_dist * inst_weight * scale_factor);
+                      mcf_problem.capacity_lower_bound[arc] = 0;
+                      mcf_problem.capacity_upper_bound[arc] = 1;
+                      if (honor_clock_region_constraints)
                         m.hc_arcs.at(hc_id).push_back(m.inst_to_site_arcs.size() - 1);
                     }
                 }
@@ -377,6 +387,9 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
             .def("set_honor_clock_constraints",
                  &OPENPARF_NAMESPACE::MinCostFlowLegalizer<double>::set_honor_clock_constraints,
                  "Set whether to consider clock region constraints")
+            .def("set_slr_aware_flag",
+                 &OPENPARF_NAMESPACE::MinCostFlowLegalizer<double>::set_slr_aware_flag,
+                 "Set whether to consider multi-die architecture")
             .def("set_max_clk_per_half_column",
                  &OPENPARF_NAMESPACE::MinCostFlowLegalizer<double>::set_max_clk_per_half_column,
                  "Set maximum number of clock nets in each half column")

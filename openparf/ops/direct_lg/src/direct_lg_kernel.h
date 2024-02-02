@@ -64,6 +64,7 @@ void directLegalize(database::PlaceDB const &                db,
                     uint8_t *                                hc_avail_map) {
   DLProblem prob;
   prob.useXarchLgRule = param.useXarchLgRule;
+  prob.slrAwareFlag   = param.slrAwareFlag;
   prob.instXYs.resize(db.numInsts());
   for (IndexType i = 0; i < prob.instXYs.size(); ++i) {
     prob.instXYs[i].set(init_pos[(i << 1)], init_pos[(i << 1) + 1]);

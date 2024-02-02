@@ -81,6 +81,10 @@ public:
     ///@brief The left boundary of half columns within this clock regions.
     IndexType const &HcXMin() const { return hc_xmin_; }
 
+    void setHcYMid (IndexType hc_ymid) { hc_ymid_ = hc_ymid;}
+
+    IndexType const &HcYMid() const { return hc_ymid_; }
+
     /// @brief set the right boundary of half columns within this clock region.
     void setHcXMax(IndexType hc_xmax) { hc_xmax_ = hc_xmax; }
 
@@ -118,8 +122,9 @@ protected:
 
     std::string name_;      ///< clock region name
     BoxType     bbox_;      ///< bounding box
-    IndexType   hc_xmin_;   ///< left boundary of half_columns with in this clock region.
-    IndexType   hc_xmax_;   ///< left boundary of half_columns with in this clock region.
+    IndexType   hc_xmin_;   ///< left  boundary of half_columns with in this clock region.
+    IndexType   hc_xmax_;   ///< right boundary of half_columns with in this clock region.
+    IndexType   hc_ymid_;   ///< boundary between upper and lower half column regions
 
     std::vector<IndexType> half_column_region_ids_;   ///< half column region indices in the clock
                                                       ///< region

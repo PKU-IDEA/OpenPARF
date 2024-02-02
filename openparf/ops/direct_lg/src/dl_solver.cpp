@@ -32,6 +32,8 @@ DLSolver::DLSolver(DLProblem const                         &prob,
       _legality_check_functor(legality_check_functor),
       _xy_to_half_column_functor(xy_to_half_column_functor),
       _instClockIndex(inst_to_clock_indexes),
+      _slrWidth(prob.slrWidth),
+      _slrHeight(prob.slrHeight),
       _num_threads(num_threads) {
   buildDLProblem(prob);
 }
@@ -451,6 +453,7 @@ void DLSolver::initNets() {
     auto &net = _netArray[i];
     if (net.numPins() == 0 || net.numPins() > _param.wirelenScoreMaxNetDegree) {
       net.bbox.set(0, 0, 0, 0);
+      net.slr_bbox.set(0, 0, 0, 0);
       net.pinIdArrayX.clear();
       net.pinIdArrayY.clear();
       continue;
@@ -458,10 +461,21 @@ void DLSolver::initNets() {
 
     // Compute the net bounding box
     net.bbox.set(kRealTypeMax, kRealTypeMax, kRealTypeMin, kRealTypeMin);
+    net.slr_bbox.set(kIntTypeMax, kIntTypeMax, kIntTypeMin, kIntTypeMin);
+    _xl = IntType(_bndBox.xl());
+    _yl = IntType(_bndBox.yl());
     for (IndexType pinId : net.pinIdArray) {
       const auto &pin  = _pinArray[pinId];
       const auto &inst = _instArray[pin.instId];
       net.bbox.encompass(inst.loc + pin.offset);
+      if(_param.slrAwareFlag) {
+        IntType xx = IntType((inst.x() + pin.offsetX() - _xl) / _slrWidth);
+        IntType yy = IntType((inst.y() + pin.offsetY() - _yl) / _slrHeight);
+        net.slr_bbox.setXL(std::min(net.slr_bbox.xl(), xx));
+        net.slr_bbox.setXH(std::max(net.slr_bbox.xh(), xx));
+        net.slr_bbox.setYL(std::min(net.slr_bbox.yl(), yy));
+        net.slr_bbox.setYH(std::max(net.slr_bbox.yh(), yy));        
+      }
     }
 
     // Compute the X sorted pin ID array
@@ -1053,7 +1067,7 @@ void DLSolver::createNewCandidates(DLSite &site) {
 
 /// Compute the score of a candidate
 RealType DLSolver::computeCandidateScore(const Candidate &cand) {
-  RealType    netShareScore = 0.0, wirelenImprov = 0.0;
+  RealType    netShareScore = 0.0, wirelenImprov = 0.0, sllImprov = 0.0;
   const auto &site = _siteMap[cand.siteId];
 
   // Collect all pins in this candidate then sort them from low to high
@@ -1071,6 +1085,7 @@ RealType DLSolver::computeCandidateScore(const Candidate &cand) {
   }
 
   // We compute the total score in a net-by-net manner
+  // We prefer pre-extract the pins within site in a net instead of using an interval style.
   IndexType   maxNetDegree = std::max(_param.netShareScoreMaxNetDegree, _param.wirelenScoreMaxNetDegree);
   const auto *currNet      = &_netArray[_pinArray[pins[0]].netId];
   if (currNet->numPins() > maxNetDegree) {
@@ -1097,6 +1112,9 @@ RealType DLSolver::computeCandidateScore(const Candidate &cand) {
       }
       if (currNet->numPins() <= _param.wirelenScoreMaxNetDegree) {
         wirelenImprov += computeWirelenImprov(*currNet, currNetIntPins, site.loc);
+        if(_param.slrAwareFlag) {
+          sllImprov += computeSLLIncrease(*currNet, currNetIntPins, site.loc);
+        }
       }
       currNet = &_netArray[netId];
       if (currNet->numPins() > maxNetDegree) {
@@ -1114,10 +1132,13 @@ RealType DLSolver::computeCandidateScore(const Candidate &cand) {
   }
   if (currNet->numPins() <= _param.wirelenScoreMaxNetDegree) {
     wirelenImprov += computeWirelenImprov(*currNet, currNetIntPins, site.loc);
+    if(_param.slrAwareFlag) {
+      sllImprov += computeSLLIncrease(*currNet, currNetIntPins, site.loc);
+    }
   }
   // Compute the final score and return
   netShareScore /= (1.0 + _param.extNetCountWt * (numNets - numIntNets));
-  return netShareScore + _param.wirelenImprovWt * wirelenImprov;
+  return netShareScore + _param.wirelenImprovWt * wirelenImprov + _param.sllIncreaseWt * sllImprov;
 }
 
 /// Given a net and a set of pins in this net,
@@ -1200,6 +1221,87 @@ RealType DLSolver::computeWirelenImprov(const DLNet &net, const IndexVector &pin
   }
   return net.weight * (_param.xWirelenWt * (net.bbox.width() - bbox.width()) +
                        _param.yWirelenWt * (net.bbox.height() - bbox.height()));
+}
+
+/// @brief Compute the potential increase (or decrease) in SLL due to moving pins 
+/// of a net to a given new location.
+/// @param net   the given net, its bounding box of SLR (bbox) must be correct
+/// @param pins  the set of pins in this net that will be moved
+/// @param loc   the target moving location
+/// @return The computed increase in SLL. A negative value indicates a decrease in SLL.
+RealType DLSolver::computeSLLIncrease(const DLNet &net, const IndexVector &pins, const XY<RealType> &loc) const {
+  // If all pins in the net are moved together, there is no change in SLL.
+  if (net.numPins() == pins.size()) {
+    return 0;
+  }
+
+  // Calculate the new bounding box in SLR after moving the pins.
+  Box<IntType> slr_bbox(net.slr_bbox);
+  IntType      loc_xx = IntType((loc.x() - _xl) / _slrWidth);
+  IntType      loc_yy = IntType((loc.y() - _yl) / _slrHeight);
+
+  // Update the x-coordinate of the bounding box's lower-left corner.
+  if (loc_xx <= slr_bbox.xl()) {
+    slr_bbox.setXL(loc_xx);
+  } else {
+    // Find the first pin in net.pinIdArrayX that does not in "pins"
+    auto it = net.pinIdArrayX.begin();
+    while (std::find(pins.begin(), pins.end(), *it) != pins.end()) {
+      ++it;
+    }
+    const auto &pin   = _pinArray[*it];
+    RealType    pinX  = _instArray[pin.instId].x() + pin.offsetX();
+    IntType     pinXX = IntType((pinX - _xl) / _slrWidth);
+    slr_bbox.setXL(std::min(pinXX, loc_xx));
+  }
+
+  // Update the x-coordinate of the bounding box's upper-right corner.
+  if (loc_xx >= slr_bbox.xh()) {
+    slr_bbox.setXH(loc_xx);
+  } else {
+    // Find the first pin in net.pinIdArrayX that does not in "pins"
+    auto rit = net.pinIdArrayX.rbegin();
+    while (std::find(pins.begin(), pins.end(), *rit) != pins.end()) {
+      ++rit;
+    }
+    const auto &pin   = _pinArray[*rit];
+    RealType    pinX  = _instArray[pin.instId].x() + pin.offsetX();
+    IntType     pinXX = IntType((pinX - _xl) / _slrWidth);
+    slr_bbox.setXH(std::max(pinXX, loc_xx));
+  }
+
+  // Update the y-coordinate of the bounding box's lower-left corner.
+  if (loc_yy <= slr_bbox.yl()) {
+    slr_bbox.setYL(loc_yy);
+  } else {
+    // Find the first pin in net.pinIdArrayY that does not in "pins"
+    auto it = net.pinIdArrayY.begin();
+    while (std::find(pins.begin(), pins.end(), *it) != pins.end()) {
+      ++it;
+    }
+    const auto &pin   = _pinArray[*it];
+    RealType    pinY  = _instArray[pin.instId].y() + pin.offsetY();
+    IntType     pinYY = IntType((pinY - _yl) / _slrHeight);
+    slr_bbox.setYL(std::min(pinYY, loc_yy));
+  }
+
+  // Update the y-coordinate of the bounding box's upper-right corner.
+  if (loc_yy >= slr_bbox.yh()) {
+    slr_bbox.setYH(loc_yy);
+  } else {
+    // Find the last pin in net.pinIdArrayY that does not in "pins"
+    auto rit = net.pinIdArrayY.rbegin();
+    while (std::find(pins.begin(), pins.end(), *rit) != pins.end()) {
+      ++rit;
+    }
+    const auto &pin   = _pinArray[*rit];
+    RealType    pinY  = _instArray[pin.instId].y() + pin.offsetY();
+    IntType     pinYY = IntType((pinY - _yl) / _slrHeight);
+    slr_bbox.setYH(std::max(pinYY, loc_yy));
+  }
+
+  // Calculate and return the increase in SLL based on the difference in width and height of the original and new bounding box.
+  return net.weight * ((net.slr_bbox.width() - slr_bbox.width()) + (net.slr_bbox.height() - slr_bbox.height()));
 }
 
 /// Given a site, broadcast its top candidate to the constituting instances
@@ -1374,6 +1476,7 @@ bool DLSolver::createRipupCandidate(const DLInstance &inst, const DLSite &site, 
     }
     // Compute the wirelength improvement of puting the instance to the site
     RealType wirelenImprov = 0;
+    RealType sllIncrease = 0;
     for (IndexType pinId : inst.pinIdArray) {
       const auto &pin = _pinArray[pinId];
       const auto &net = _netArray[pin.netId];
@@ -1381,7 +1484,7 @@ bool DLSolver::createRipupCandidate(const DLInstance &inst, const DLSite &site, 
         wirelenImprov += computeWirelenImprov(net, IndexVector{pinId}, site.loc);
       }
     }
-    res.score = _param.wirelenImprovWt * wirelenImprov - site.det.score - area;
+    res.score = _param.wirelenImprovWt * wirelenImprov + _param.sllIncreaseWt * sllIncrease - site.det.score - area;
   }
   return true;
 }

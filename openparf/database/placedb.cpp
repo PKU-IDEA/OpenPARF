@@ -72,6 +72,9 @@ PlaceDB::PlaceDB(Database &db, PlaceParams place_params) : db_(db), place_params
 
   // Clock related dat structures.
   initClock();
+
+  // Check fixed instances
+  checkFixedInstToSiteRrscTypeCompatibility();
 }
 
 // std::vector<uint8_t> PlaceDB::resourceAreaTypes(std::string const &name) const {
@@ -218,6 +221,57 @@ PlaceDB::IndexType PlaceDB::XyToHcIndex(const PlaceDB::CoordinateType &x, const 
   auto ix = std::min(static_cast<IndexType>(x), layout_to_half_column_map.width() - 1);
   auto iy = std::min(static_cast<IndexType>(y), layout_to_half_column_map.height() - 1);
   return layout_to_half_column_map.at(ix, iy).ref().get().id();
+}
+
+std::vector<int32_t> PlaceDB::XyToSlrIndex(const int32_t &x, const int32_t &y) const {
+  std::vector<int32_t> XyIndex;
+  int32_t              width  = static_cast<int32_t>(db_->layout().siteMap().width());
+  int32_t              height = static_cast<int32_t>(db_->layout().siteMap().height());
+  openparfAssert(0 <= x && x <= width);
+  openparfAssert(0 <= y && y <= height);
+
+  // We suppose all SLRs with a same width and height.
+  IndexType num_slrX = numSlrX();
+  IndexType num_slrY = numSlrY();
+  openparfAssertMsg((width % num_slrX == 0) && (height % num_slrY == 0),
+                    "width = %d, height = %d, num_slrX = %d, num_slrY = %d.\n",
+                    width, height, num_slrX, num_slrY);
+
+  int32_t slr_width  = width / num_slrX;
+  int32_t slr_height = height / num_slrY;
+  int32_t x_index    = x / slr_width;
+  int32_t y_index    = y / slr_height;
+
+  XyIndex.emplace_back(x_index);
+  XyIndex.emplace_back(y_index);
+
+  return XyIndex;
+}
+
+PlaceDB::IndexType PlaceDB::CrXyToSlrIndex(const int32_t &crX, const int32_t &crY) const {
+  IndexType num_crX = numCrX();
+  IndexType num_crY = numCrY();
+  IndexType num_slrX = numSlrX();
+  IndexType num_slrY = numSlrY();
+  openparfAssert(0 <= crX && crX <= num_crX);
+  openparfAssert(0 <= crY && crY <= num_crY);
+
+  IndexType slrCrX = num_crX / num_slrX;
+  IndexType slrCrY = num_crY / num_slrY;
+  IndexType idx    = crX / slrCrX;
+  IndexType idy    = crY / slrCrY;
+
+  return idx * num_slrY + idy;
+}
+
+PlaceDB::IndexType PlaceDB::CrIndexToSlrIndex(const IndexType &crIdx) const {
+  openparfAssertMsg(crIdx < numCr(), "The maxinum CR Id %d, but given CR Id %d\n", numCr(), crIdx);
+  IndexType num_crX = numCrX();
+  IndexType num_crY = numCrY();
+  IndexType crX     = crIdx / num_crY;
+  IndexType crY     = crIdx % num_crY;
+
+  return CrXyToSlrIndex(crX, crY);
 }
 
 std::pair<PlaceDB::IndexType, PlaceDB::IndexType> PlaceDB::clockRegionMapSize() const {
@@ -1066,6 +1120,7 @@ void PlaceDB::initClock() {
 
   // Generate layout-to-clock-region mapping
   if (place_params_.honor_clock_region_constraints) {
+    uint32_t cr_id = 0;
     for (const ClockRegion &clock_region : db_->layout().clockRegionMap()) {
       auto xl = static_cast<IndexType>(clock_region.bbox().xl());
       auto yl = static_cast<IndexType>(clock_region.bbox().yl());
@@ -1123,6 +1178,26 @@ void PlaceDB::initClock() {
                 "Site (%d, %d) does not belong to any half column\n", ix, iy);
       }
     }
+  }
+}
+
+void PlaceDB::checkFixedInstToSiteRrscTypeCompatibility() const {
+  auto const &design          = db_->design();
+  auto const &layout          = db_->layout();
+  auto        top_module_inst = design.topModuleInst();
+  openparfAssert(top_module_inst);
+  // assume flat netlist for now
+  auto const &netlist = top_module_inst->netlist();
+  // check the site fixed instance
+  for (IndexType new_inst_id = fixed_range_.first; new_inst_id < fixed_range_.second; ++new_inst_id) {
+    auto        old_inst_id = oldInstId(new_inst_id);
+    auto const &inst        = netlist.inst(old_inst_id);
+    IndexType   inst_x      = inst.attr().loc().x();
+    IndexType   inst_y      = inst.attr().loc().y();
+    auto site_proxy = layout.siteMap().at(inst_x, inst_y);
+    openparfAssertMsg(site_proxy, "Site(%d, %d) not exists\n", inst_x, inst_y);
+    openparfAssertMsg(instToSiteRrscTypeCompatibility(new_inst_id, *site_proxy),
+                      "Fixed inst %d is not compatible in Site(%d, %d)", new_inst_id, inst_x, inst_y);
   }
 }
 

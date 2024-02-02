@@ -38,7 +38,10 @@ def place(params, pl_path):
                                     data["netlist"])
             place_file = osp.join(osp.dirname(params.design_input),
                                   data["place"])
-        db.readFlexshelf(params.layout_input, netlist_file, place_file)
+        if params.slr_aware_flag:
+            db.readFlexshelfForMultiDie(params.layout_input, netlist_file, place_file)
+        else:
+            db.readFlexshelf(params.layout_input, netlist_file, place_file)
     else:
         raise RuntimeError("Unknown benchmark format: {}".format(
             params.benchmark_format))

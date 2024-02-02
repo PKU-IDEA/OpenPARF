@@ -31,15 +31,16 @@ struct ISMParam {
   RealType  mateCredit        = 0.0;     // The extra credit given to instance-to-mate site assignment
   RealType  flowCostScale     = 100.0;   // Flow costs must be integer, we up scale them to get better accuracy
   IndexType batchSize         = 10;      // We check stop condition every this number of ISM iterations
-  RealType  minBatchImprov = 0.001;   // Stop ISM if the wirelength improv. is less than this among for a single batch
-  RealType  xWirelenWt     = 1.0;     // The weight for x-directed wirelength
-  RealType  yWirelenWt     = 1.0;     // The weight for y-directed wirelength
+  RealType  minBatchImprov    = 0.001;   // Stop ISM if the wirelength improv. is less than this among for a single batch
+  RealType  xWirelenWt        = 1.0;     // The weight for x-directed wirelength
+  RealType  yWirelenWt        = 1.0;     // The weight for y-directed wirelength
+  RealType  sllIncreaseWt     = 4.0;     // The weight for the increase in SLL counts, and need to be tuned futher with the mateCredi.
 
   // For message printing
   // 0: quiet
   // 1: basic messages
   // 2: extra messages
-  IndexType verbose        = 1;
+  IndexType verbose           = 1;
 };
 
 }   // namespace ism_dp

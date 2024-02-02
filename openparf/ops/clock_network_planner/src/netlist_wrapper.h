@@ -26,12 +26,17 @@
 OPENPARF_BEGIN_NAMESPACE
 
 namespace utplacefx {
+    constexpr IndexType kIntTypeMax   = std::numeric_limits<IntType>::max();
+    constexpr IndexType kIndexTypeMax = std::numeric_limits<IndexType>::max();
+    constexpr RealType  kRealTypeMax  = std::numeric_limits<RealType>::max();
+    constexpr RealType  kRealTypeMin  = std::numeric_limits<RealType>::lowest();
     // This class interfaces database::PlaceDB to utplacefx::Netlist, so that we can
     // use utplacefx's code with minimal changes
     template<typename T>
     class WrapperNetlist {
     public:
         using ClockIdType = uint32_t;
+        using IndexVector = std::vector<IndexType>;
         WrapperNetlist(database::PlaceDB const &p) : _p(p),
             _inst2ClockId(_p.instToClocks()),
             _net2ClockId(_p.getClockNetIndex()),
@@ -61,6 +66,9 @@ namespace utplacefx {
         IndexType numNodes() {
             return _p.numInsts();
         }
+        IndexType numPins() {
+            return _p.pinOffsets().size();
+        }
         IndexType nodeNumPins(IndexType nodeId) {
             auto const &instPins = _p.instPins();
             auto const &pins     = instPins.at(nodeId);
@@ -79,7 +87,12 @@ namespace utplacefx {
         IndexType pinToNodeId(IndexType pinId) {
             return _p.pin2Inst(pinId);
         }
-
+        IndexType pinToNetId(IndexType pinId) {
+            return _p.pin2Net(pinId);
+        }
+        SignalType pinToSignalType(IndexType pinId) {
+            return _p.pinSignalType(pinId);
+        }
         IndexType netPin(IndexType netId, IndexType pinIdxInNet) {
             auto &n = _p.netPins();
             return n.at(netId, pinIdxInNet);
@@ -158,16 +171,24 @@ namespace utplacefx {
             _inflated_areas = inflated_areas;
         }
 
+        IndexType getSlrIdFromCrId(IndexType crId) {
+            return _p.CrIndexToSlrIndex(crId);
+        }
+
+        IndexType getSlrIdFromCrXy(IndexType crX, IndexType crY) {
+            return _p.CrXyToSlrIndex(crX, crY);
+        }
+
     private:
-        IndexType                             _numClockNets;
-        database::PlaceDB const &             _p;
-        T const *                             _pos;
-        std::vector<ClockIdType> const &              _net2ClockId;
-        std::vector<IndexType>                _clockId2Net;
-        std::vector<std::vector<ClockIdType>> const & _inst2ClockId;   // -1
-        std::vector<IndexType> const &                _netId2ClockSourceInstId;
-        IndexType floating_net_id;
-        T const *                                     _inflated_areas;
+        IndexType                                       _numClockNets;
+        database::PlaceDB const &                       _p;
+        T const *                                       _pos;
+        std::vector<ClockIdType> const &                _net2ClockId;
+        std::vector<IndexType>                          _clockId2Net;
+        std::vector<std::vector<ClockIdType>> const &   _inst2ClockId;
+        std::vector<IndexType> const &                  _netId2ClockSourceInstId;
+        IndexType                                       floating_net_id;
+        T const *                                       _inflated_areas;
     };
 
     template class WrapperNetlist<float>;

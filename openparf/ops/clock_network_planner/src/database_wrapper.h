@@ -80,7 +80,13 @@ namespace utplacefx {
             return _half_column_regions[hcid].bbox();
         }
 
-    private:
+        // Multi-die Attribute
+        IndexType numSlrX() const { return _layout.superLogicRegionMap().width(); }
+        IndexType numSlrY() const { return _layout.superLogicRegionMap().height(); }
+        IndexType slrWidth() const { return _layout.superLogicRegionMap().at(0).width(); }
+        IndexType slrHeight() const { return _layout.superLogicRegionMap().at(0).height(); }
+
+       private:
         // database::Layout is represent the FPGA architecture
         database::Layout const &                       _layout;
         database::ClockRegionMap const &               _crMap;

@@ -26,7 +26,6 @@ OPENPARF_BEGIN_NAMESPACE
 
 namespace ism_dp {
 
-
 using container::Box;
 using container::Vector2D;
 using container::XY;
@@ -38,27 +37,27 @@ struct ISMProblem {
   using IndexSet    = std::set<IndexType>;
   ISMProblem()      = default;
 
-  IndexVector        instTypes;   // Size = #inst, type ID of each instance
-  IndexVector        instCKSR;    // Size = #inst, CK/SR ID of each instance
-  std::vector<CESet> instCE;      // Size = #inst, CE IDs of each instance
+  IndexVector        instTypes;  // Size = #inst, type ID of each instance
+  IndexVector        instCKSR;   // Size = #inst, CK/SR ID of each instance
+  std::vector<CESet> instCE;     // Size = #inst, CE IDs of each instance
   IndexVector
-          instToSite;   // Size = #inst, the initial site ID of each instance. Infinity means this instance is fixed.
-  std::vector<XY<RealType>> instXYs;   // Size = #insts, position of fixed instance
+                            instToSite;  // Size = #inst, the initial site ID of each instance. Infinity means this instance is fixed.
+  std::vector<XY<RealType>> instXYs;     // Size = #insts, position of fixed instance
   std::vector<IndexVector>
-              instToMates;   // Size = #inst, the mate ID of each instance that should be given extra credit
-  IndexVector pinToInst;     // Size = #pin, instance ID of each pin
-  IndexVector pinToNet;      // Size = #pin, net ID of each pin
-  std::vector<XY<RealType>> pinOffsets;      // Size = #pin, pin offset w.r.t. instance lower-left corner
-  std::vector<RealType>     netWts;          // Size = #net, weight of each net for wirelength optimization
-  Vector2D<XY<RealType>>    siteXYs;         // Size = #site, the actual location of each site
-  Vector2D<IndexType>       siteToCtrlSet;   // Size = #site, the control set ID of each site
-  Vector2D<IndexType>       siteToMate;      // Size = #site, the mate ID of each site
-  std::vector<IndexSet>     instCKs;         // Size = #inst, number of clocks connected to each instance
-  std::function<bool(IndexType, IndexType, IndexType)> isCKAllowedInSite;   // func(clockId, siteX, siteY)
+                                                       instToMates;        // Size = #inst, the mate ID of each instance that should be given extra credit
+  IndexVector                                          pinToInst;          // Size = #pin, instance ID of each pin
+  IndexVector                                          pinToNet;           // Size = #pin, net ID of each pin
+  std::vector<XY<RealType>>                            pinOffsets;         // Size = #pin, pin offset w.r.t. instance lower-left corner
+  std::vector<RealType>                                netWts;             // Size = #net, weight of each net for wirelength optimization
+  Vector2D<XY<RealType>>                               siteXYs;            // Size = #site, the actual location of each site
+  Vector2D<IndexType>                                  siteToCtrlSet;      // Size = #site, the control set ID of each site
+  Vector2D<IndexType>                                  siteToMate;         // Size = #site, the mate ID of each site
+  std::vector<IndexSet>                                instCKs;            // Size = #inst, number of clocks connected to each instance
+  std::function<bool(IndexType, IndexType, IndexType)> isCKAllowedInSite;  // func(clockId, siteX, siteY)
   bool                                                 honorClockConstraints;
 };
 
-}   // namespace ism_dp
+}  // namespace ism_dp
 OPENPARF_END_NAMESPACE
 
 #endif

@@ -198,12 +198,20 @@ void initDLProblemSiteMap(database::PlaceDB const &db, DLProblem &prob) {
   openparfPrint(kDebug, "#CLB-SLICE: %d, #LUTs per Site: %d, #FFs per Site: %d\n", numSLICE, num_LUTs, num_FFs);
 }
 
+/// Initialize the SLR information for the DL problem
+void initDLProblemSlrInfo(database::PlaceDB const &db, DLProblem &prob) {
+  prob.slrWidth  = prob.slrAwareFlag ? db.slrWidth() : 0;
+  prob.slrHeight = prob.slrAwareFlag ? db.slrHeight() : 0;
+}
+
 /// Initialize the DL problem
 void initDLProblem(database::PlaceDB const &db, DLProblem &prob) {
   // Initialize netlist information
   initDLProblemNetlist(db, prob);
   // Initialize the site map information
   initDLProblemSiteMap(db, prob);
+  // Initialize the SLR information
+  initDLProblemSlrInfo(db, prob);
 }
 
 void writeHalfColumnAvailabilityMapSolution(database::PlaceDB const &db, DLSolver const &solver, uint8_t *hcAvailMap) {

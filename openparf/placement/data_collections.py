@@ -54,7 +54,14 @@ class LagMultiplier(object):
         self.lambdas = None
         self.t = None
         self.cs = None
-        self.gd_gw_norm_ratio = None
+        self.gd_gw_gs_norm_ratio = None
+        # params for multi-die
+        self.psi = 0.0  
+        self.psi_m = 0.0
+        self.psi_v = 0.0
+        self.psi_beta1 = 0.9
+        self.psi_beta2 = 0.999
+        self.psi_epsilon = 1e-8
 
     def __str__(self):
         """ convert to string
@@ -78,7 +85,31 @@ class FenceRegionCostParams(object):
     def __repr__(self):
         return self.__str__()
 
+class SoftFloorGamma(object):
+    """ A class to wrap gamma related data for the soft_floor function
+    """
 
+    def __init__(self):
+        # base gamma
+        self.base = None
+        self.k0 = None
+        self.b0 = None
+        self.k1 = None
+        self.b1 = None
+        # weights for different area types; use wl_precond as weight.
+        self.weights = None
+        # real gamma value
+        self.gamma = None
+
+    def __str__(self):
+        """ convert to string
+        """
+        content = "soft_floor_gamma:  %g\n" % (self.gamma)
+        return content
+
+    def __repr__(self):
+        return self.__str__()
+    
 class WirelengthGamma(object):
     """ A class to wrap gamma related data
     """
@@ -171,6 +202,8 @@ class DataCollections(object):
             self.filler_sizes = np.zeros([placedb.numAreaTypes(), 2],
                                          dtype=ntype)
             self.num_fillers = np.zeros(placedb.numAreaTypes(), dtype=np.int32)
+            self.sll_flag = False
+            self.sll_start_overflow = 0.9
             inst_sizes = np.array(placedb.instSizes().tolist(), dtype=ntype).reshape(
                 [placedb.numInsts(), -1, 2])
             self.area_type_inst_groups = [
@@ -288,6 +321,8 @@ class DataCollections(object):
             self.fence_region_boxes = torch.Tensor(
                 self.fence_region_boxes).to(dtype).to(device)
             self.movable_inst_to_clock_region = None
+            self.movable_inst_to_super_logic_region = None
+            self.movable_inst_cnp_sll_optim_mask = None
             self.clock_available_clock_region = None
             self.movable_inst_cr_avail_map = None
             # Create a tensor that maps all instances, namely movable, fixed and filler instances, to their clock
@@ -406,6 +441,7 @@ class DataCollections(object):
 
             # some temporary storage
             self.wirelength = None
+            self.wasll = None
             self.density = None
             self.phi = None
             self.fence_region_cost = None
@@ -453,6 +489,9 @@ class DataCollections(object):
                                                     b_starts=torch.tensor(ssr_chain_ids.indexBeginData().tolist(), dtype=torch.int32, device=device))
             else:
                 self.ssr_chain_info_vec, self.ssr_chain_ids = None, None
+
+            self.num_slrX = placedb.numSlrX() if params.slr_aware_flag else 1 
+            self.num_slrY = placedb.numSlrY() if params.slr_aware_flag else 1
 
             logging.info("Layout = (%f, %f) (%f, %f)" % (self.diearea[0], self.diearea[1],
                                                          self.diearea[2], self.diearea[3]))
@@ -506,11 +545,13 @@ class DataCollections(object):
         @param placedb placement database
         """
         self.gamma = WirelengthGamma()
+        self.soft_floor_gamma = SoftFloorGamma()
         # truncate to valid area types
         self.gamma.base = 0.5 * params.base_gamma * torch.from_numpy(
             self.bin_map_sizes.sum(axis=1))
         self.gamma.base = self.gamma.base.to(device)
-
+        self.soft_floor_gamma.base = 0.5 * 6 * torch.from_numpy(self.bin_map_sizes.sum(axis=1))
+        self.soft_floor_gamma.base = self.soft_floor_gamma.base.to(device)
         # According to elfplace's implementation
         # Compute coeffcient for wirelength gamma updating
         # The basic idea is that we want to achieve
@@ -525,6 +566,8 @@ class DataCollections(object):
         #   b = 1.0 - k
         self.gamma.k = 2.0 / (1.0 - params.stop_overflow)
         self.gamma.b = 1.0 - self.gamma.k
+        self.soft_floor_gamma.k0 = -2.59 / (self.sll_start_overflow - params.stop_overflow)
+        self.soft_floor_gamma.b0 = -self.sll_start_overflow * self.soft_floor_gamma.k0
 
         # weights of gamma for different area types
         # truncate to valid area types
@@ -533,6 +576,7 @@ class DataCollections(object):
             self.gamma.weights[area_type] = self.wl_precond[self.area_type_inst_groups[area_type]].sum(
             )
         self.gamma.weights = self.gamma.weights.to(device)
+        self.soft_floor_gamma.weights = self.gamma.weights.clone()
         # self.gamma.weights = torch.zeros(placedb.numAreaTypes(),
         #                                 dtype=dtype,
         #                                 device=device).scatter_add_(
@@ -540,3 +584,4 @@ class DataCollections(object):
         #                                     index=self.inst_area_types_long,
         #                                     dim=0)[:self.num_area_types]
         self.gamma.gamma = torch.tensor(0, dtype=dtype, device=device)
+        self.soft_floor_gamma.gamma = torch.tensor(5.0, dtype=dtype, device=device)

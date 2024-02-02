@@ -27,6 +27,7 @@ DirectLegalizeParam DirectLegalizeParam::ParseFromPyObject(const py::object &pyp
   param.minNeighbors         = pyparam.attr("minNeighbors").cast<decltype(param.minNeighbors)>();
   param.extNetCountWt        = pyparam.attr("extNetCountWt").cast<decltype(param.extNetCountWt)>();
   param.wirelenImprovWt      = pyparam.attr("wirelenImprovWt").cast<decltype(param.wirelenImprovWt)>();
+  param.sllIncreaseWt        = pyparam.attr("sllIncreaseWt").cast<decltype(param.sllIncreaseWt)>();
   param.greedyExpansion      = pyparam.attr("greedyExpansion").cast<decltype(param.greedyExpansion)>();
   param.ripupExpansion       = pyparam.attr("ripupExpansion").cast<decltype(param.ripupExpansion)>();
   param.slotAssignFlowWeightScale =
@@ -47,6 +48,7 @@ DirectLegalizeParam DirectLegalizeParam::ParseFromPyObject(const py::object &pyp
   param.maxClockNetPerHalfColumn =
           pyparam.attr("maxClockNetPerHalfColumn").cast<decltype(param.maxClockNetPerHalfColumn)>();
   param.useXarchLgRule = pyparam.attr("useXarchLgRule").cast<decltype(param.useXarchLgRule)>();
+  param.slrAwareFlag           = pyparam.attr("slrAwareFlag").cast<decltype(param.slrAwareFlag)>();
   return param;
 }
 

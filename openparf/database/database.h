@@ -96,8 +96,14 @@ class Database : public Object {
   /// @brief read from flexshelf files
   void readFlexshelf(std::string const &layout_file, std::string const &netlist_file, std::string const &place_file);
 
+  /// @brief read from flexshelf files
+  void readFlexshelfForMultiDie(std::string const &layout_file, std::string const &netlist_file, std::string const &place_file);
+
   // @brief read from flexshelf layout file
   void readFlexshelfLayout(std::string const &layout_file);
+
+  // @brief read from flexshelf layout file for multi-die FPGA
+  void readFlexshelfLayoutForMultiDie(std::string const &layout_file);
 
   // @brief read from flexshelf design file
   void readFlexshelfDesign(std::string const &netlist_file, std::string const &place_file);

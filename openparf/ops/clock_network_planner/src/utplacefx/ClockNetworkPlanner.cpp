@@ -273,6 +273,42 @@ void ClockNetworkPlanner<T>::createNodeSetInfos()
             }
         }
     }
+
+    if (Parameters::slrAwareFlag) {
+        const RealType  sllOptBnd  = 5;
+        const IndexType slrWidth   = _db->slrWidth();
+        const IndexType slrHeight  = _db->slrHeight();
+        const IndexType fpgaWidth  = _db->numSiteX();
+        const IndexType fpgaHeight = _db->numSiteY();
+        openparfPrint(kDebug, "slrWidth: %d, slrHeight: %d, fpgaWidth: %d, fpgaHeight: %d\n", slrWidth, slrHeight,
+                      fpgaWidth, fpgaHeight);
+                      
+        for (auto &p : _rsrcTypeToNodeSetInfoArray) {
+            if (p.first != RsrcType::SLICEL) {
+                continue;
+            }
+
+            auto &nsInfoArray = p.second;
+            for (IndexType nsIdx = 0; nsIdx < nsInfoArray.size(); ++nsIdx) {
+                auto      &nsInfo = nsInfoArray.at(nsIdx);
+                const auto nsX    = nsInfo.x();
+                const auto nsY    = nsInfo.y();
+
+                // check if this node cluster at the coner or not
+                IntType slrX  = static_cast<IntType>(nsX / slrWidth);
+                IntType slrXl = static_cast<IntType>(std::max(nsX - sllOptBnd, 0.) / slrWidth);
+                IntType slrXh = static_cast<IntType>(std::min(nsX + sllOptBnd, fpgaWidth - 1.0) / slrWidth);
+
+                IntType slrY  = static_cast<IntType>(nsY / slrHeight);
+                IntType slrYl = static_cast<IntType>(std::max(nsY - sllOptBnd, 0.) / slrHeight);
+                IntType slrYh = static_cast<IntType>(std::min(nsY + sllOptBnd, fpgaHeight - 1.0) / slrHeight);
+
+                if ((slrX != slrXl) || (slrX != slrXh) || (slrY != slrYl) || (slrY != slrYh)) {
+                    nsInfo.sllOpt = true;
+                }
+            }
+        }
+    }
 }
 
 /// Perfrom net coarsening
@@ -447,6 +483,7 @@ bool ClockNetworkPlanner<T>::mergeNodeClustersIfLegal(IndexType idxA, IndexType 
 template<typename T>
 bool ClockNetworkPlanner<T>::run()
 {
+    if (Parameters::slrAwareFlag) initNetlistInfo();
     // Create an empty clock mask
     ClockMaskSet initCMS(_nlPtr->numClockNets(), _db->numCrX(), _db->numCrY());
     return run(initCMS);
@@ -1012,7 +1049,10 @@ void ClockNetworkPlanner<T>::nodeSetAssignmentRGTKernel(const ClockMaskSet &cms,
 /// \param  res  results of the node assignment
 template<typename T>
 void ClockNetworkPlanner<T>::nodeSetAssignmentMCFKernel(const ClockMaskSet &cms, NodeAssignResult &res)
-{
+{   
+    _sllOptInstIdArray.clear();
+    _nodeToSllOptAllocs.clear();
+    _nodeToSllOptAllocs.resize(_nlPtr->numNodes());
     for (auto &p : _rsrcTypeToNodeSetInfoArray)
     {
         // Reset node assignment
@@ -1108,8 +1148,17 @@ void ClockNetworkPlanner<T>::nodeSetAssignmentMCFKernel(const ClockMaskSet &cms,
                         mArcInfos.emplace_back(l, r);
                         auto d = getXYToClockRegionDist(nsInfo.xy, _crInfoGrid.at(r),
                                                         nsInfo.rsrcType);
-                        costMap[mArcs.back()] =
-                                d * nsInfo.wt / sup * Parameters::cnpMinCostFlowCostScaling;
+                        if (Parameters::slrAwareFlag) {
+                            RealType s = 0;
+                            if (nsInfo.sllOpt) {
+                                s = computeSLLIncrease(nsInfo.nodeIdArray, _crInfoGrid.at(r));
+                            }
+                            RealType totalCost = (d + Parameters::weightBetweenDistanceAndSllIncrease * s) *
+                                                nsInfo.wt / sup * Parameters::cnpMinCostFlowCostScaling;
+                            costMap[mArcs.back()] = totalCost;
+                        } else {
+                          costMap[mArcs.back()] = d * nsInfo.wt / sup * Parameters::cnpMinCostFlowCostScaling;
+                        }
                         lowerCap[mArcs.back()] = 0;
                         upperCap[mArcs.back()] = sup;
                         ++numCr;
@@ -2266,7 +2315,8 @@ void ClockNetworkPlanner<T>::realizeNodeAssignment(NodeSetInfo &nsInfo)
             mArcInfos.emplace_back(l, r);
             auto rsrcType = _nlPtr->nodeRsrcType(nodeId);
             auto xy = _nlPtr->getXYFromNodeId(nodeId);
-            costMap[mArcs.back()] = getXYToClockRegionDist(xy, crInfo, rsrcType) * _nlPtr->nodeNumPins(nodeId) / rsrcDemArray.at(l) * Parameters::cnpMinCostFlowCostScaling;
+            costMap[mArcs.back()] = getXYToClockRegionDist(xy, crInfo, rsrcType) * _nlPtr->nodeNumPins(nodeId) /
+                                    rsrcDemArray.at(l) * Parameters::cnpMinCostFlowCostScaling;
             lowerCap[mArcs.back()] = 0;
             upperCap[mArcs.back()] = rsrcDemArray.at(l);
         }
@@ -2374,6 +2424,202 @@ void ClockNetworkPlanner<T>::planHalfColumnRegionClockAvailability()
     }
 }
 
+template <typename T>
+void ClockNetworkPlanner<T>::initNetlistInfo() {
+    // Construct instances and set their locations
+    _instArray.clear();
+    _instArray.resize(_nlPtr->numNodes());
+    for (IndexType i = 0; i < _instArray.size(); ++i) {
+        auto &inst       = _instArray[i];
+        inst.id          = i;
+        XY<RealType> pos = _nlPtr->getXYFromNodeId(i);
+        inst.loc.set(pos.x(), pos.y());
+    }
+    // Construct nets
+    _netArray.clear();
+    _netArray.resize(_nlPtr->numNets());
+    for (IndexType i = 0; i < _netArray.size(); ++i) {
+        auto &net = _netArray[i];
+        net.id    = i;
+    }
+    // Construct pins and set their offsets, instance IDs and net IDs
+    _pinArray.clear();
+    _pinArray.resize(_nlPtr->numPins());
+    for (IndexType i = 0; i < _pinArray.size(); ++i) {
+        auto &pin  = _pinArray[i];
+        pin.id     = i;
+        pin.instId = _nlPtr->pinToNodeId(i);
+        pin.netId  = _nlPtr->pinToNetId(i);
+        _instArray[pin.instId].pinIdArray.emplace_back(i);
+        _netArray[pin.netId].pinIdArray.emplace_back(i);
+    }
+
+    IntType xl = 0, yl = 0;
+    IntType slrWidth  = _db->slrWidth();
+    IntType slrHeight = _db->slrHeight();
+    for (IndexType i = 0; i < _netArray.size(); ++i) {
+        auto &net = _netArray[i];
+        if (net.numPins() == 0 ||
+            net.numPins() > Parameters::cnpSuperLongLineImporvMaxNetDegree) {
+            net.slr_bbox.set(0, 0, 0, 0);
+            net.pinIdArrayX.clear();
+            net.pinIdArrayY.clear();
+            continue;
+        }
+
+        // Compute net's slr-level bounding box
+        net.slr_bbox.set(kIntTypeMax, kIntTypeMax, -kIntTypeMax, -kIntTypeMax);
+        for (IndexType pinId : net.pinIdArray) {
+            const auto &pin  = _pinArray[pinId];
+            const auto &inst = _instArray[pin.instId];
+            IntType     xx   = static_cast<IntType>((inst.x() - xl) / slrWidth);
+            IntType     yy   = static_cast<IntType>((inst.y() - yl) / slrHeight);
+            net.slr_bbox.setXL(std::min(net.slr_bbox.xl(), xx));
+            net.slr_bbox.setXH(std::max(net.slr_bbox.xh(), xx));
+            net.slr_bbox.setYL(std::min(net.slr_bbox.yl(), yy));
+            net.slr_bbox.setYH(std::max(net.slr_bbox.yh(), yy));
+        }
+
+        // Compute the X sorted pin ID array
+        net.pinIdArrayX = net.pinIdArray;
+        auto compX      = [&](IndexType a, IndexType b) {
+            const auto &pinA  = _pinArray[a];
+            const auto &pinB  = _pinArray[b];
+            const auto &instA = _instArray[pinA.instId];
+            const auto &instB = _instArray[pinB.instId];
+            return instA.x() < instB.x();
+        };
+        std::sort(net.pinIdArrayX.begin(), net.pinIdArrayX.end(), compX);
+
+        // Compute the Y sorted pin ID array
+        net.pinIdArrayY = net.pinIdArray;
+        auto compY      = [&](IndexType a, IndexType b) {
+            const auto &pinA  = _pinArray[a];
+            const auto &pinB  = _pinArray[b];
+            const auto &instA = _instArray[pinA.instId];
+            const auto &instB = _instArray[pinB.instId];
+            return instA.y() < instB.y();
+        };
+        std::sort(net.pinIdArrayY.begin(), net.pinIdArrayY.end(), compY);
+    }
+}
+
+/// @brief Compute the SLL increase resulting from moving nodes to a new clock region.
+template <typename T>
+RealType ClockNetworkPlanner<T>::computeSLLIncrease(
+    const std::vector<IndexType> &nodeIdArray, const ClockRegionInfo &crInfo) {
+    RealType  res       = 0;
+    IntType   slrWidth  = _db->slrWidth();
+    IntType   slrHeight = _db->slrHeight();
+    IndexType crX       = crInfo.crX();
+    IndexType crY       = crInfo.crY();
+    IntType   crSlrX    = static_cast<IntType>(crX / (_db->numCrX() / _db->numSlrX()));
+    IntType   crSlrY    = static_cast<IntType>(crY / (_db->numCrY() / _db->numSlrY()));
+
+    // Iterate over all node IDs in the array
+    for (auto nodeId : nodeIdArray) {
+        // Convert instance coordinates to SLR grid coordinates
+        IntType loc_xx = static_cast<IntType>(_instArray[nodeId].x() / slrWidth);
+        IntType loc_yy = static_cast<IntType>(_instArray[nodeId].y() / slrHeight);
+
+        // Skip instances already in the same SLR as the clock region
+        if ((loc_xx == crSlrX) && (loc_yy == crSlrY)) {
+            continue;
+        }
+
+        const IndexVector            &pinIdArray = _instArray[nodeId].pinIdArray;
+        std::unordered_set<IndexType> moved_pins(pinIdArray.begin(), pinIdArray.end());
+
+        // Iterate over all pin IDs of the instance
+        RealType temp = 0;
+        for (auto pinId : pinIdArray) {
+            IndexType     netId = _pinArray[pinId].netId;
+            const CNPNet &net   = _netArray[netId];
+
+            // Skip nets with too few or too many pins
+            if (net.numPins() <= 1 ||
+                net.numPins() > Parameters::cnpSuperLongLineImporvMaxNetDegree) {
+                continue;
+            }
+
+            Box<IntType> slr_bbox(net.slr_bbox);
+
+            // Update net's slr bounding box in X and Y dimension.
+            // Here we update the bounding box to reflect the new location
+            // after moving the pins to the specified clock region.
+            if (crSlrX <= slr_bbox.xl()) {
+                slr_bbox.setXL(crSlrX);
+            } else {
+                for (auto it = net.pinIdArrayX.begin(); it != net.pinIdArrayX.end(); it++) {
+                    if (moved_pins.find(*it) == moved_pins.end()) {
+                        const auto &pin   = _pinArray[*it];
+                        RealType    pinX  = _instArray[pin.instId].x();
+                        IntType     pinXX = static_cast<IntType>(pinX / slrWidth);
+                        slr_bbox.setXL(std::min(pinXX, crSlrX));
+                        break;
+                    }
+                }
+            }
+
+            if (crSlrX >= slr_bbox.xh()) {
+                slr_bbox.setXH(crSlrX);
+            } else {
+                for (auto it = net.pinIdArrayX.rbegin(); it != net.pinIdArrayX.rend(); it++) {
+                    if (moved_pins.find(*it) == moved_pins.end()) {
+                        const auto &pin   = _pinArray[*it];
+                        RealType    pinX  = _instArray[pin.instId].x();
+                        IntType     pinXX = static_cast<IntType>(pinX / slrWidth);
+                        slr_bbox.setXH(std::max(pinXX, crSlrX));
+                        break;
+                    }
+                }
+            }
+
+            if (crSlrY <= slr_bbox.yl()) {
+                slr_bbox.setYL(crSlrY);
+            } else {
+                for (auto it = net.pinIdArrayY.begin(); it != net.pinIdArrayY.end(); it++) {
+                    if (moved_pins.find(*it) == moved_pins.end()) {
+                        const auto &pin   = _pinArray[*it];
+                        RealType    pinY  = _instArray[pin.instId].y();
+                        IntType     pinYY = static_cast<IntType>(pinY / slrHeight);
+                        slr_bbox.setYL(std::min(pinYY, crSlrY));
+                        break;
+                    }
+                }
+            }
+
+            if (crSlrY >= slr_bbox.yh()) {
+                slr_bbox.setYH(crSlrY);
+            } else {
+                for (auto it = net.pinIdArrayY.rbegin(); it != net.pinIdArrayY.rend(); it++) {
+                    if (moved_pins.find(*it) == moved_pins.end()) {
+                        const auto &pin   = _pinArray[*it];
+                        RealType    pinY  = _instArray[pin.instId].y();
+                        IntType     pinYY = static_cast<IntType>(pinY / slrHeight);
+                        slr_bbox.setYH(std::max(pinYY, crSlrY));
+                        break;
+                    }
+                }
+            }
+
+            temp += static_cast<RealType>((slr_bbox.width() - net.slr_bbox.width()) +
+                                          (slr_bbox.height() - net.slr_bbox.height()));
+        }
+
+        SllOptimAlloc &nodeAlloc = _nodeToSllOptAllocs.at(nodeId);
+        if (temp < 0 && temp < nodeAlloc.sllIncrease) {
+            nodeAlloc.sllIncrease = temp;
+            nodeAlloc.crId        = crX * _db->numCrY() + crY;
+            nodeAlloc.slrId       = _nlPtr->getSlrIdFromCrXy(crX, crY);
+            _sllOptInstIdArray.insert(nodeId);
+        }
+        res += temp;
+    }
+
+    return res;
+}
+
 /// Export the clock tree solution to a file
 template<typename T>
 void ClockNetworkPlanner<T>::exportClockTreeToFile(const std::string &fileName) const
@@ -2382,7 +2628,7 @@ void ClockNetworkPlanner<T>::exportClockTreeToFile(const std::string &fileName) 
 }
 
 template<typename T>
-void ClockNetworkPlanner<T>::transferSolutionToTorchTensor( int32_t* nodeToCr, uint8_t* clkAvailCR)  {
+void ClockNetworkPlanner<T>::transferSolutionToTorchTensor( int32_t* nodeToCr, uint8_t* clkAvailCR, uint8_t *instSllOptimMask)  {
     for (IndexType x = 0; x < _db->numCrX(); x++)
     for (IndexType y = 0; y < _db->numCrY(); y++) {
         auto& nodeArr = _crToNodeIdArray.at(x, y);
@@ -2393,9 +2639,7 @@ void ClockNetworkPlanner<T>::transferSolutionToTorchTensor( int32_t* nodeToCr, u
         }
     }
 
-
-     for (IndexType ckIdx = 0; ckIdx < _nlPtr->numClockNets(); ++ckIdx)
-    {
+    for (IndexType ckIdx = 0; ckIdx < _nlPtr->numClockNets(); ++ckIdx) {
         for (IndexType x = 0; x < _db->numCrX(); x++)
         for (IndexType y = 0; y < _db->numCrY(); y++) {
             IndexType idx =  ckIdx * _db->numCrX() * _db->numCrY() +  x * _db->numCrY() + y;
@@ -2403,8 +2647,29 @@ void ClockNetworkPlanner<T>::transferSolutionToTorchTensor( int32_t* nodeToCr, u
         }
         // TODO: assert _db num is same as _clockAvailCR inner data
     }
-}
 
+    if (Parameters::slrAwareFlag) {
+        const auto totalCr = _db->numCrX() * _db->numCrY();
+        for (auto const nId : _sllOptInstIdArray) {
+            const auto &nodeAssign = _nodeToSllOptAllocs.at(nId);
+
+            if (nodeAssign.slrId == _nlPtr->getSlrIdFromCrId(nodeToCr[nId])) continue;
+
+            bool availFlag = true;
+            for (auto ckIdx : _nlPtr->clockIdxOfNode(nId)) {
+                if (!clkAvailCR[ckIdx * totalCr + nodeAssign.crId]) {
+                    availFlag = false;
+                    break;
+                }
+            }
+
+            if (availFlag) {
+                nodeToCr[nId]         = nodeAssign.crId;
+                instSllOptimMask[nId] = 1;
+            }
+        }
+    }
+}
 
 template class ClockNetworkPlanner<float>;
 template class ClockNetworkPlanner<double>;
