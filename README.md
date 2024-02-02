@@ -1,11 +1,17 @@
 # OpenPARF
 
 🕹 OpenPARF is an open-source FPGA placement and routing framework build upon the deep learning toolkit [PyTorch](https://github.com/pytorch/pytorch). It is designed to be flexible, efficient, and extensible.
-Currently, OpenPARF has expanded its capabilities to support **multi-die FPGA placement**.
+
+## News
+
+- 🎉 (2024/02/02) We are excited to announce the release of OpenPARF 2.0! This release includes a number of significant improvements and new features, including **multi-die FPGA placement** support and a new architecture definition format `Flexshelf`. We have also made a number of improvements to unit tests and documentation. We encourage all users to upgrade to this new version. For more information, please see the [release notes](https://github.com/PKU-IDEA/OpenPARF/releases/tag/2.0.0)!
+
+---
 
 <!-- toc -->
 
 - [OpenPARF](#openparf)
+  - [News](#news)
   - [More About OpenPARF](#more-about-openparf)
     - [A Multi-Electrostatic-based FPGA P\&R Framework](#a-multi-electrostatic-based-fpga-pr-framework)
     - [Single-Die Reference Flow](#single-die-reference-flow)
@@ -40,6 +46,8 @@ Currently, OpenPARF has expanded its capabilities to support **multi-die FPGA pl
       - [Architecture Definition Format](#architecture-definition-format)
       - [Customizing the Architecture](#customizing-the-architecture)
       - [Modify the SLL Counts Lookup Table (Optional)](#modify-the-sll-counts-lookup-table-optional)
+        - [Step 1: Generating a Custom SLL Counts Lookup Table](#step-1-generating-a-custom-sll-counts-lookup-table)
+        - [Step 2: Integrating the SLL Lookup Table into Your Project](#step-2-integrating-the-sll-lookup-table-into-your-project)
   - [Resources](#resources)
   - [Releases and Contributing](#releases-and-contributing)
   - [The Team](#the-team)
@@ -93,11 +101,13 @@ The following are the visualization for electrostatic fields in benchmark `ISPD2
 | ![LUT](README.assets/lut.gif) | ![ff](README.assets/ff.gif) | ![dsp](README.assets/dsp.gif) | ![BRAM](README.assets/bram.gif) |
 
 ## Multi-Die Placement for OpenPARF
-### Brief Introduction
-In the ongoing endeavor to enhance OpenPARF, we have integrated a key feature from the [LEAPS](https://ieeexplore.ieee.org/document/10364626) - a specialized solution aimed at minimizing super long line (SLL) counts in multi-die FPGA placement. 
-This integration not only enriches OpenPARF's capabilities but also addresses the complexities of modern multi-die FPGA designs. 
 
-Compared to the existing state-of-the-art method, OpenPARF demonstrates significant superiority, achieving an average reduction of `43.08%` in the SLL counts and a `9.99%` optimization in half-perimeter wirelength (HPWL). Notably, OpenPARF leverages GPU acceleration technology, achieving a remarkable runtime improvement of up to `34.34X`. 
+### Brief Introduction
+
+In the ongoing endeavor to enhance OpenPARF, we have integrated a key feature from the [LEAPS](https://ieeexplore.ieee.org/document/10364626) - a specialized solution aimed at minimizing super long line (SLL) counts in multi-die FPGA placement.
+This integration not only enriches OpenPARF's capabilities but also addresses the complexities of modern multi-die FPGA designs.
+
+Compared to the existing state-of-the-art method, OpenPARF demonstrates significant superiority, achieving an average reduction of `43.08%` in the SLL counts and a `9.99%` optimization in half-perimeter wirelength (HPWL). Notably, OpenPARF leverages GPU acceleration technology, achieving a remarkable runtime improvement of up to `34.34X`.
 
 ### Multi-Die Reference Flow
 
@@ -335,7 +345,7 @@ python openparf.py --config unittest/regression/ispd2016_flexshelf/FPGA01_flexsh
 
 Note that the `openparf.py` script requires the `--config` option to specify the configuration file to use. The appropriate configuration file for the benchmark should exist in the corresponding directory (`unittest/regression/ispd2016_flexshelf/`) before running the command.
 
-- For **Single-Die** Place & Route, use scripts from `unittest/regression/ispd2016`, `unittest/regression/ispd2016_flexshelf`,  `unittest/regression/ispd2017`, and `unittest/regression/ispd2017_flexshelf`.
+- For **Single-Die** Place & Route, use scripts from `unittest/regression/ispd2016`, `unittest/regression/ispd2016_flexshelf`, `unittest/regression/ispd2017`, and `unittest/regression/ispd2017_flexshelf`.
 - For **Multi-Die** Place, use scripts from `unittest/regression/ispd2016_flexshelf` and `unittest/regression/ispd2017_flexshelf`.
 
 It is essential to ensure all dependencies and the Python environment have been correctly set up before running the command. Once everything is in order, the benchmark will commence, and the outcomes will be sent to the output directory.
@@ -386,15 +396,18 @@ When you import the OpenPARF placement result file into Vivado, it will be locat
 **NOTE** that if you want the evaluate the placement via Vivado, you can disable the routing stage in OpenPARF by simply setting the `route_flag` to 0 before running the tool.
 
 ### Customizing Multi-Die FPGA Architecture
+
 In OpenPARF, customizing the architecture of multi-die FPGA is a vital feature that allows for greater flexibility and adaptability in FPGA design. Below, we provide detailed instructions on how to define and modify the architecture to suit specific design requirements.
 
 #### Architecture Definition Format
+
 OpenPARF uses a structured XML format for defining the architecture of multi-die FPGAs.
-These architecture files can be found at  `benchmarks/arch/ultrascale/multi-die_layout_<{num_cols}x{num_rows}>.xml`.
-The format includes several key tags such as `<resources>`, `<primitives>`, `<global_sw>`, `<tile_blocks>`, `<cores>`, and `<chip>`. 
+These architecture files can be found at `benchmarks/arch/ultrascale/multi-die_layout_<{num_cols}x{num_rows}>.xml`.
+The format includes several key tags such as `<resources>`, `<primitives>`, `<global_sw>`, `<tile_blocks>`, `<cores>`, and `<chip>`.
 The `<chip>` tag is crucial as it describes the topology of SLRs and their types.
 
 Example of a `2x2` SLR topology in XML format:
+
 ```xml
 <chip name="demo_chip">
     <grid name="chip_grid" cols="2" rows="2">
@@ -405,8 +418,11 @@ Example of a `2x2` SLR topology in XML format:
     </grid>
 </chip>
 ```
+
 #### Customizing the Architecture
+
 To customize the multi-die FPGA architecture in OpenPARF:
+
 - **Define the SLR Topology**: Adjust the `<grid>` tag within the `<chip>` element to match your desired SLR topology, specifying the `cols` and `rows`.
 
 - **Specify Core Details**: Each core within the grid should have its `name`, `type`, `x`, `y`, `width`, and `height` attributes defined, aligning with the SLR specifications in the `<cores>` section.
@@ -418,22 +434,28 @@ To customize the multi-die FPGA architecture in OpenPARF:
 Following these guidelines will enable users to customize the architecture of multi-die FPGAs in OpenPARF, enhancing the adaptability and efficiency of FPGA designs.
 
 #### Modify the SLL Counts Lookup Table (Optional)
+
 When customizing the architecture of a multi-die FPGA, especially for SLR topologies beyond the predefined `1x4` or `2x2` layouts, it's crucial to also update the SLL counts lookup table to align with the new architecture. This step ensures that the FPGA design accurately reflects the customized topology.
 
 ##### Step 1: Generating a Custom SLL Counts Lookup Table
-Run the `scripts/compute_sll_counts_table.py` script with your specific SLR topology dimensions (`num_cols` and `num_rows`). 
+
+Run the `scripts/compute_sll_counts_table.py` script with your specific SLR topology dimensions (`num_cols` and `num_rows`).
 
 Example command:
-  ```shell
-  python compute_sll_counts_table.py --num_cols <num cols> --num_rows <num rows> --output <filename>
-  ```
+
+```shell
+python compute_sll_counts_table.py --num_cols <num cols> --num_rows <num rows> --output <filename>
+```
+
 - Replace `<filename>` with your chosen file name, `<num cols>` and `<num rows>` with the number of columns and rows in your SLR topology.
 - After running the script, a file named `<filename>.npy` will be generated. Move this file to the directory `<installation directory>/openparf/ops/sll/`.
 
 Note: Typically, `num_cols` and `num_rows` should not exceed 5 due to fabrication and technology constraints. The script is optimized for efficient execution within this scale.
 
 ##### Step 2: Integrating the SLL Lookup Table into Your Project
-To use the newly generated SLL counts lookup table in your project, modify the code in the file located at  `<install>/openparf/ops/sll/sll.py` as follows:
+
+To use the newly generated SLL counts lookup table in your project, modify the code in the file located at `<install>/openparf/ops/sll/sll.py` as follows:
+
 - Locate the section of the code initializing the SLL counts table. It will typically have predefined tables for `1x4` and `2x2` SLR topologies.
 - For SLR topologies other than `1x4` and `2x2`, you will see a placeholder where the table should be loaded. Uncomment and modify this section:
   ```python

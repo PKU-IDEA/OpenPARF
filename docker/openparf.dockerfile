@@ -12,7 +12,7 @@
 # =====================================================================================================
 # Date         	By     	    (version)	Comments
 # -------------	---------	---------	---------------------------------------------------------------
-# Feb 1 2024    RunzheTao   2.0         add python packages for `scripts/compute_sll_counts_tables.py` 
+# Feb 1 2024    RunzheTao   2.0         add python packages for `scripts/compute_sll_counts_tables.py`
 # =====================================================================================================
 # Copyright (c) 2020 - 2023 All Right Reserved, PKU-IDEA Group
 # -----
@@ -21,7 +21,7 @@
 # Usage:
 #       docker build <dirname> -t <image name:tag name> -f <dockerfile name>
 # For example,
-#       docker build . -t openparf:1.0 -f ./openparf.dockerfile
+#       docker build . -t openparf:2.0 -f ./openparf.dockerfile
 # Tip:
 #       When using Dockerfile to build an image, be sure to use a clean directory (preferably a new directory) to avoid other files in the directory.
 #       The build process will load all files in the current directory and cause disk overflow).
