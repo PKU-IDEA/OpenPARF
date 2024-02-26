@@ -710,7 +710,7 @@ void Database::readXML(std::string const &xml_file) {
         } else if (pin_type == "output") {
           cbk.addCellOutputPinCbk(pin_name);
         } else {
-          openparfAssertMsg(false, "Unknown pin type %s\n", pin_type);
+          openparfAssertMsg(false, "Unknown pin type %s\n", pin_type.c_str());
         }
       }
     }
