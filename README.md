@@ -53,6 +53,7 @@
   - [The Team](#the-team)
   - [Publications](#publications)
   - [License](#license)
+  - [FPGA'24 Contest](#FPGA'24-Contest)
 
 <!-- tocstop -->
 
@@ -540,3 +541,7 @@ OpenPARF is maintained by [PKU-IDEA Lab](https://github.com/PKU-IDEA) at Peking 
 ## License
 
 This software is released under BSD 3-Clause License, Please refer to [LICENSE](./LICENSE) for details.
+
+## FPGA'24 Contest
+
+View **fpga24contest** folder for our routing solution for FPGA'24 Contest.
