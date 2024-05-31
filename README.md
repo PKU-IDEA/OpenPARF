@@ -497,7 +497,7 @@ OpenPARF is maintained by [PKU-IDEA Lab](https://github.com/PKU-IDEA) at Peking 
 - [Jing Mai](https://magic3007.github.io/), [Yibai Meng](https://www.mengyibai.com/), [Zhixiong Di](http://www.dizhixiong.cn/), and [Yibo Lin](https://yibolin.com/), “**Multi-electrostatic FPGA placement considering SLICEL-SLICEM heterogeneity and clock feasibility**,” in _Proceedings of the 59th ACM/IEEE Design Automation Conference (DAC)_, San Francisco California: ACM, Jul. 2022, pp. 649–654. doi: 10.1145/3489517.3530568. [[paper]](https://doi.org/10.1145/3489517.3530568)
 - [Jiarui Wang](https://tomjerry213.github.io/), [Jing Mai](https://magic3007.github.io/), [Zhixiong Di](http://www.dizhixiong.cn/), and [Yibo Lin](https://yibolin.com/), “**A Robust FPGA Router with Concurrent Intra-CLB Rerouting**,” in _Proceedings of the 28th Asia and South Pacific Design Automation Conference (ASP-DAC)_, Tokyo Japan: ACM, Jan. 2023, pp. 529–534. doi: 10.1145/3566097.3567898. [[paper]](https://doi.org/10.1145/3566097.3567898)
 - [Zhixiong Di](http:///www.dizhixiong.cn/), Runzhe Tao, [Jing Mai](https://magic3007.github.io/), Lin Chen, [Yibo Lin](https://yibolin.com/), "**LEAPS:Topological-<u>L</u>ayout-Adaptable Multi-di<u>e</u> FPG<u>A</u> <u>P</u>lacement for <u>S</u>uper Long Line Minimization**", _IEEE Transactions on Circuits and Systems I: Regular Papers (TCAS-I)_, doi: 10.1109/TCSI.2023.3340554, 2023. [[paper]](https://ieeexplore.ieee.org/document/10364626)
-- [Jing Mai](https://magic3007.github.io/), [Jiarui Wang](https://tomjerry213.github.io/), Yifan Chen, [Zizheng Guo](https://guozz.cn), Xun Jiang, [Yun Liang](https://ericlyun.github.io), [Yibo Lin](https://yibolin.com/), "**OpenPARF 3.0: Robust Multi-Electrostatics Based FPGA Macro Placement Considering Cascaded Macros Groups and Fence Regions**", _International Symposium of Electronics Design Automation (ISEDA)_, 2023.
+- [Jing Mai](https://magic3007.github.io/), [Jiarui Wang](https://tomjerry213.github.io/), Yifan Chen, [Zizheng Guo](https://guozz.cn), Xun Jiang, [Yun Liang](https://ericlyun.github.io), [Yibo Lin](https://yibolin.com/), "**OpenPARF 3.0: Robust Multi-Electrostatics Based FPGA Macro Placement Considering Cascaded Macros Groups and Fence Regions**", _International Symposium of Electronics Design Automation (ISEDA)_, 2024.
 <details><summary>CLICK ME to show the bibtex.</summary>
 
 <p>
@@ -538,7 +538,7 @@ OpenPARF is maintained by [PKU-IDEA Lab](https://github.com/PKU-IDEA) at Peking 
   title         ={OpenPARF 3.0: Robust Multi-Electrostatics Based FPGA Macro Placement Considering Cascaded Macros Groups and Fence Regions},
   author        ={Mai, Jing and Wang, Jiarui and Chen, Yifan and Jiang, Xun and Liang, Yun and Lin, Yibo},
   journal       ={International Symposium of Electronics Design Automation (ISEDA)},
-  year          ={2023}
+  year          ={2024}
 }
 ```
 
