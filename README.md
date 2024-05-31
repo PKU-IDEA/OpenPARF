@@ -527,18 +527,19 @@ OpenPARF is maintained by [PKU-IDEA Lab](https://github.com/PKU-IDEA) at Peking 
 }
 
 @article{PLACE_TCASI2023_Di,
-  title         ={LEAPS: Topological-Layout-Adaptable Multi-Die FPGA Placement for Super Long Line Minimization},
-  author        ={Di, Zhixiong and Tao, Runzhe and Mai, Jing and Chen, Lin and Lin, Yibo},
-  journal       ={IEEE Transactions on Circuits and Systems I: Regular Papers},
-  year          ={2023},
-  publisher     ={IEEE}
+  title         = {LEAPS: Topological-Layout-Adaptable Multi-Die FPGA Placement for Super Long Line Minimization},
+  author        = {Di, Zhixiong and Tao, Runzhe and Mai, Jing and Chen, Lin and Lin, Yibo},
+  journal       = {IEEE Transactions on Circuits and Systems I: Regular Papers},
+  year          = {2023},
+  publisher     = {IEEE}
 }
 
-@article{PLACE_ISEDA2024_Mai,
-  title         ={OpenPARF 3.0: Robust Multi-Electrostatics Based FPGA Macro Placement Considering Cascaded Macros Groups and Fence Regions},
-  author        ={Mai, Jing and Wang, Jiarui and Chen, Yifan and Jiang, Xun and Liang, Yun and Lin, Yibo},
-  journal       ={International Symposium of Electronics Design Automation (ISEDA)},
-  year          ={2024}
+@inproceedings{PLACE_ISEDA2024_Mai,
+  title         = {{OpenPARF 3.0}: Robust Multi-Electrostatics Based {FPGA} Macro Placement Considering Cascaded Macros Groups and Fence Regions},
+  author        = {Mai, Jing and Wang, Jiarui and Chen, Yifan and Jiang, Xun and Liang, Yun and Lin, Yibo},
+  booktitle     = {International Symposium of Electronics Design Automation (ISEDA)},
+  pages         = {},
+  year          = {2024}
 }
 ```
 
