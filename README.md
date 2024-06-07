@@ -341,7 +341,7 @@ To run the benchmarks, navigate to the installation directory and execute the fo
 
 ```bash
 cd <installation directory>
-python openparf.py --config unittest/regression/ispd2016_flexshelf/FPGA01_flexshelf.json
+python openparf.py --config unittest/regression/ispd2016/FPGA01.json
 ```
 
 Note that the `openparf.py` script requires the `--config` option to specify the configuration file to use. The appropriate configuration file for the benchmark should exist in the corresponding directory (`unittest/regression/ispd2016_flexshelf/`) before running the command.
@@ -356,10 +356,10 @@ It is essential to ensure all dependencies and the Python environment have been 
 OpenPARF allows configuration of benchmark parameters using JSON. Default parameters can be found in `openparf/params.json`, while users can use `--config` to pass custom parameters which will override defaults. For example:
 
 ```bash
-python openparf.py --config unittest/regression/ispd2016_flexshelf/FPGA01_flexshelf.json
+python openparf.py --config unittest/regression/ispd2016/FPGA01.json
 ```
 
-The parameter configuration in `unittest/regression/ispd2016_flexshelf/FPGA01_flexshelf.json` will override the defaults in `openparf/params.json`.
+The parameter configuration in `unittest/regression/ispd2016/FPGA01.json` will override the defaults in `openparf/params.json`.
 
 Common modifiable parameters include
 
