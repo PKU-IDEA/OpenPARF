@@ -3,6 +3,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <cstdint>
 
 namespace clock_network_planner {
 

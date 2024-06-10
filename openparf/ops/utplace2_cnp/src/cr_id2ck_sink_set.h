@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <memory>
+#include <cstdint>
 
 namespace clock_network_planner {
 

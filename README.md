@@ -121,7 +121,7 @@ Compared to the existing state-of-the-art method, OpenPARF demonstrates signific
 OpenPARF is written in C++ and Python. The following are the prerequisites for building OpenPARF.
 
 - Python 3.7 or above.
-- C++ compiler with **C++14** support, recommended to use GCC 7.5. Other version may also work, but have not been tested.
+- C++ compiler with **C++14** support.  Tested compilers include GCC 7.5 (the default version under Ubuntu 18.04), GCC 11.4.0 (the default version under Ubuntu 22.04).
 - **PyTorch 1.7.1**. Other version may also work, but have not been tested. Please refer to the [next section](#install-dependencies) to install PyTorch through conda environment.
 - **Gurobi 9.5** (optional, if the router is compiled). Other version may also work, but have not been tested. Please make sure to obtain a valid license and follow the installation instructions provided on the Gurobi website.
   Note that only the router uses gurobi in OpenPARF. If you do not need a router, you can leave gurobi uninstalled and set `ENABL_ROUTER` to `OFF` when compiling OpenPARF.
