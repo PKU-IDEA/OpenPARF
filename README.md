@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="README.assets/openparf_logo.small.jpg" width="400">
+  <img src="README.assets/openparf_logo.small.jpg">
 </div>
 
 <h1 align="center">OpenPARF</h1>
