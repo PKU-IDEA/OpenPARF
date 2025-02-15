@@ -1,6 +1,16 @@
-# OpenPARF
+<div align="center">
+  <img src="assets/openparf_logo.png" width="400">
+</div>
 
-🕹 OpenPARF is an open-source FPGA placement and routing framework build upon the deep learning toolkit [PyTorch](https://github.com/pytorch/pytorch). It is designed to be flexible, efficient, and extensible.
+<h1 align="center">OpenPARF</h1>
+
+<p align="center">
+  🕹 An open-source FPGA placement and routing framework built upon <a href="https://github.com/pytorch/pytorch">PyTorch</a>
+</p>
+
+<p align="center">
+  <strong>Flexible</strong> &nbsp;|&nbsp; <strong>Efficient</strong> &nbsp;|&nbsp; <strong>Extensible</strong>
+</p>
 
 ## News
 
