@@ -1,7 +1,7 @@
 <div align="center">
   <img src="README.assets/openparf_logo.web.jpeg">
+  <h1>OpenPARF</h1>
 </div>
-<h1 align="center">OpenPARF</h1>
 <p align="center">
   🕹 An open-source FPGA placement and routing framework built upon <a href="https://github.com/pytorch/pytorch">PyTorch</a>
 </p>
