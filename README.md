@@ -86,7 +86,7 @@ pip install hummingbird-ml pyyaml networkx tqdm
 # Build OpenPARF
 git clone --recursive https://github.com/PKU-IDEA/OpenPARF.git
 mkdir build && cd build
-cmake ../OpenPARF -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DPYTHON_EXECUTABLE=$(which python)
+cmake .. -DCMAKE_PREFIX_PATH=$CONDA_PREFIX -DPYTHON_EXECUTABLE=$(which python) -DCMAKE_INSTALL_PREFIX=../install
 make -j8 && make install
 ```
 
@@ -95,7 +95,7 @@ For detailed installation instructions, see [INSTALL.md](INSTALL.md).
 ### Running Benchmarks
 
 ```bash
-cd <installation directory>
+cd ../install
 python openparf.py --config unittest/regression/ispd2016/FPGA01.json
 ```
 
