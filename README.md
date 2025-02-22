@@ -94,6 +94,8 @@ For detailed installation instructions, see [INSTALL.md](INSTALL.md).
 
 ### Running Benchmarks
 
+Download the benchmarks according to [BENCHMARKS.md](BENCHMARKS.md), then run the following command:
+
 ```bash
 cd ../install
 python openparf.py --config unittest/regression/ispd2016/FPGA01.json
